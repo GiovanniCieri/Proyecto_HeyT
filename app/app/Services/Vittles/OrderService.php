@@ -13,17 +13,22 @@ class OrderService
         private readonly VittlesClient $client,
         private readonly CatalogService $catalog,
         private readonly DiagnosticLog $diagnostics,
+        private readonly ConfirmedOrderStore $confirmedOrders,
     ) {}
 
-    public function place(string $locationId, string $itemName, string $requestKey = 'demo'): array
+    public function place(string $locationId, string $itemName, string $requestKey = 'demo', int $quantity = 2): array
     {
-        $this->diagnostics->event('info', 'order.place.started', __METHOD__);
+        $this->diagnostics->event('info', 'order.place.started', __METHOD__, ['quantity' => $quantity]);
         $locationId = trim($locationId);
         $itemName = trim($itemName);
         $requestKey = trim($requestKey);
         if ($locationId === '' || $itemName === '' || $requestKey === '') {
             $this->diagnostics->event('warning', 'order.validation_failed', __METHOD__, ['reason_code' => 'missing_input']);
             throw new InvalidArgumentException('Location, nombre de producto y clave de solicitud son obligatorios.');
+        }
+        if ($quantity < 1 || $quantity > 20) {
+            $this->diagnostics->event('warning', 'order.validation_failed', __METHOD__, ['reason_code' => 'quantity_out_of_range']);
+            throw new InvalidArgumentException('La cantidad debe estar entre 1 y 20.');
         }
 
         $catalog = $this->catalog->load();
@@ -54,15 +59,15 @@ class OrderService
             throw new InvalidArgumentException('El producto «'.$itemName.'» no está disponible en '.$locationId.'.');
         }
 
-        $ref = 'heyt-'.substr(hash('sha256', json_encode([$requestKey, $locationId, $itemName, 2], JSON_UNESCAPED_UNICODE)), 0, 32);
+        $ref = 'heyt-'.substr(hash('sha256', json_encode([$requestKey, $locationId, $itemName, $quantity], JSON_UNESCAPED_UNICODE)), 0, 32);
         $this->diagnostics->event('info', 'order.reference.ready', __METHOD__, ['location_id' => $locationId, 'client_ref' => $ref]);
         $context = [
-            'location' => $matches[0], 'item' => $item, 'quantity' => 2,
+            'location' => $matches[0], 'item' => $item, 'quantity' => $quantity,
             'client_ref' => $ref, 'catalog' => $catalog,
         ];
 
         try {
-            $result = Cache::store('file')->lock('vittles-order-'.$ref, 20)->block(8, function () use ($ref, $locationId, $item, $context) {
+            $result = Cache::store('file')->lock('vittles-order-'.$ref, 20)->block(8, function () use ($ref, $locationId, $item, $context, $quantity) {
                 $found = $this->findByReference($ref);
                 if (count($found) > 1) {
                     $this->diagnostics->event('warning', 'order.lookup.ambiguous', __METHOD__, ['client_ref' => $ref, 'items_count' => count($found)]);
@@ -78,7 +83,7 @@ class OrderService
                     $order = $this->client->createOrder([
                         'location_id' => $locationId,
                         'client_ref' => $ref,
-                        'items' => [['item_id' => $item['id'], 'quantity' => 2]],
+                        'items' => [['item_id' => $item['id'], 'quantity' => $quantity]],
                     ], $locationId);
                 } catch (UnknownOutcome $e) {
                     $this->diagnostics->event('warning', 'order.post.uncertain', __METHOD__, ['client_ref' => $ref, 'error_type' => $e::class]);
@@ -110,6 +115,9 @@ class OrderService
                 'result' => $result['status'],
                 'order_id' => $result['order']['id'] ?? null,
             ]);
+            if (in_array($result['status'], ['CREATED', 'EXISTING', 'RECOVERED'], true)) {
+                $this->confirmedOrders->record($result);
+            }
 
             return $result;
         } catch (LockTimeoutException) {

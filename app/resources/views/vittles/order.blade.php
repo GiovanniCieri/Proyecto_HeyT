@@ -35,10 +35,15 @@
             <label for="item">Producto por nombre exacto</label>
             <select id="item" name="item" required @disabled(count($catalog['locations']) === 0)></select>
             <p id="menu-state" class="field-hint" aria-live="polite"></p>
-            <div class="detail-row"><span>Cantidad</span><strong>2</strong></div>
+            <label for="quantity">Cantidad</label>
+            <input id="quantity" name="quantity" type="number" min="1" max="20" step="1" value="{{ old('quantity', 2) }}" required>
+            <p class="field-help">La demo web permite elegir entre 1 y 20. El comando del ejercicio siempre usa 2.</p>
+            <label for="request_key">Identificador de compra <span class="muted">(opcional)</span></label>
+            <input id="request_key" name="request_key" type="text" maxlength="80" value="{{ old('request_key', 'demo') }}">
+            <p class="field-help">Para tu cuenta, la misma sede, producto, cantidad e identificador recuperan el pedido existente. Cambialo para iniciar otra compra.</p>
             <div class="detail-row"><span>Total estimado</span><strong id="estimate" class="estimate">—</strong></div>
             <button id="submit-order" class="primary-button" type="submit" @disabled(count($catalog['locations']) === 0)>Crear orden →</button>
-            <p class="fine-print">El total definitivo es el que devuelve Vittles. Repetir la misma solicitud recupera la orden existente.</p>
+            <p class="fine-print">El total definitivo es el que devuelve Vittles. Los pedidos confirmados quedan en el historial local.</p>
         </form>
     </section>
 
@@ -68,12 +73,15 @@
     const state = document.getElementById('menu-state');
     const estimate = document.getElementById('estimate');
     const submit = document.getElementById('submit-order');
+    const quantityField = document.getElementById('quantity');
     const previousItem = @json(old('item', ''));
 
     function updateEstimate() {
         const menu = menus[locationField.value];
         const item = menu?.items?.find(entry => entry.name === itemField.value);
-        estimate.textContent = item ? '$' + (Number(item.price) * 2).toFixed(2) : '—';
+        const quantity = Number(quantityField.value);
+        estimate.textContent = item && Number.isInteger(quantity) && quantity >= 1 && quantity <= 20
+            ? '$' + (Number(item.price) * quantity).toFixed(2) : '—';
     }
 
     function updateItems() {
@@ -102,6 +110,7 @@
 
     locationField.addEventListener('change', updateItems);
     itemField.addEventListener('change', updateEstimate);
+    quantityField.addEventListener('input', updateEstimate);
     updateItems();
 })();
 </script>

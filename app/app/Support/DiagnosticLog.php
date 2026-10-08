@@ -13,7 +13,7 @@ class DiagnosticLog
         'attempt', 'cache_hit', 'client_ref', 'duration_ms', 'error_type',
         'http_status', 'items_count', 'location_id', 'locations_count',
         'menus_count', 'method', 'operation_id', 'order_id', 'path',
-        'probe', 'reason_code', 'result', 'route', 'status', 'trace_id',
+        'probe', 'quantity', 'reason_code', 'result', 'route', 'status', 'trace_id',
         'user_id',
     ];
 

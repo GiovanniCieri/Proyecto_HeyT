@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\Vittles\CatalogService;
+use App\Services\Vittles\ConfirmedOrderStore;
 use App\Services\Vittles\OrderService;
 use App\Services\Vittles\VittlesException;
 use App\Support\DiagnosticLog;
@@ -26,15 +27,37 @@ class VittlesController extends Controller
         return view('vittles.locations', $this->catalogData($catalog));
     }
 
+    public function orders(Request $request, ConfirmedOrderStore $confirmedOrders): View
+    {
+        $input = $request->validate(['location' => ['nullable', 'string', 'max:80']]);
+        $locationId = $input['location'] ?? null;
+        $locations = $confirmedOrders->locations();
+        $orders = $confirmedOrders->recent($locationId);
+        $this->diagnostics->event('info', 'web.orders.listed', __METHOD__, [
+            'location_id' => $locationId,
+            'items_count' => count($orders),
+        ]);
+
+        return view('vittles.orders', compact('locations', 'orders', 'locationId'));
+    }
+
+    public function readme(): View
+    {
+        return view('vittles.readme');
+    }
+
     public function place(Request $request, OrderService $orders): RedirectResponse
     {
         $input = $request->validate([
             'location' => ['required', 'string', 'max:80'],
             'item' => ['required', 'string', 'max:200'],
+            'quantity' => ['required', 'integer', 'between:1,20'],
+            'request_key' => ['nullable', 'string', 'max:80'],
         ]);
 
         try {
-            $result = $orders->place($input['location'], $input['item']);
+            $webKey = 'web-user-'.$request->user()->getAuthIdentifier().'-'.($input['request_key'] ?? 'demo');
+            $result = $orders->place($input['location'], $input['item'], $webKey, (int) $input['quantity']);
         } catch (InvalidArgumentException|VittlesException $e) {
             $this->diagnostics->event('warning', 'web.order.failed', __METHOD__, ['error_type' => $e::class, 'http_status' => $e instanceof VittlesException ? $e->httpStatus : null]);
 

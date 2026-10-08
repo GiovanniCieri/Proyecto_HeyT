@@ -69,6 +69,22 @@ class VittlesIntegrationTest extends TestCase
         $this->assertSame(1, $posts);
     }
 
+    public function test_quantity_changes_the_purchase_reference_while_cli_default_remains_two(): void
+    {
+        $posts = 0;
+        $reference = null;
+        $this->fakeVittles($posts, $reference);
+
+        $service = app(OrderService::class);
+        $two = $service->place('loc_1001', 'Buffalo Wings (12)');
+        $three = $service->place('loc_1001', 'Buffalo Wings (12)', 'demo', 3);
+
+        $this->assertSame(2, $two['quantity']);
+        $this->assertSame(3, $three['quantity']);
+        $this->assertNotSame($two['client_ref'], $three['client_ref']);
+        $this->assertSame(2, $posts);
+    }
+
     private function fakeVittles(int &$posts, ?string &$reference, bool $reject = false, bool $malformedPost = false): void
     {
         config()->set('vittles.base_url', 'http://vittles.test');
@@ -120,7 +136,7 @@ class VittlesIntegrationTest extends TestCase
                     return Http::response([], 201);
                 }
 
-                return Http::response(['id' => 'ord_5501', 'status' => 'ACCEPTED', 'total' => 31, 'client_ref' => $reference], 201);
+                return Http::response(['id' => 'ord_5501', 'status' => 'ACCEPTED', 'total' => 15.5 * $request->data()['items'][0]['quantity'], 'client_ref' => $reference], 201);
             }
 
             return Http::response(['error' => 'unexpected request'], 500);

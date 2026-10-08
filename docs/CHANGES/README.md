@@ -12,3 +12,4 @@ Los archivos se nombran `AAAA-MM-DD_NN_ID_descripcion.md`. `NN` conserva el orde
 | 06 | [API-002](2026-10-08_06_API-002_contrato-observado.md) | Contrato real del mock con evidencia |
 | 07 | [API-003](2026-10-08_07_API-003_auditoria-contrato.md) | Auditoría y precisión del contrato corregido |
 | 08 | [LOG-001](2026-10-08_08_LOG-001_diagnostico-extremo-a-extremo.md) | Logs con ID y método fuente buscables |
+| 09 | [WEB-002](2026-10-08_09_WEB-002_pedidos-cantidad-readme.md) | Pedidos por sede, cantidad web y README visible |

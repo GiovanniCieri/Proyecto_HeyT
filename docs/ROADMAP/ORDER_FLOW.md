@@ -27,3 +27,11 @@ Recibir location e ítem por parámetro, validar el producto en el menú de esa 
 - Ninguna corrida crea órdenes en otras locations aunque haya leído sus menús.
 - Una sede inactiva, un producto ausente y uno no disponible producen un resultado claro y ninguna orden.
 - Los límites de esta estrategia ante procesos concurrentes y reinicio del mock quedan documentados.
+
+## Ampliación web posterior
+
+- [x] Conservar la cantidad fija de 2 en el comando evaluable.
+- [x] Permitir entre 1 y 20 unidades en la web, con validación en servidor.
+- [x] Incluir la cantidad en `client_ref`: dos cantidades diferentes son intenciones distintas.
+- [x] Separar la clave web por usuario local para no reutilizar accidentalmente la compra de otra cuenta o la del comando CLI.
+- [x] Mostrar la cantidad real en el resultado y calcular solo una estimación visual; el total definitivo sigue viniendo del POS.

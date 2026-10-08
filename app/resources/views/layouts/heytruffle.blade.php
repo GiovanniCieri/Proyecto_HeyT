@@ -18,7 +18,9 @@
                 @auth
                     <a @class(['active' => request()->routeIs('vittles.order')]) href="{{ route('vittles.order') }}">Nueva orden</a>
                     <a @class(['active' => request()->routeIs('vittles.locations')]) href="{{ route('vittles.locations') }}">Sedes y menús</a>
+                    <a @class(['active' => request()->routeIs('vittles.orders')]) href="{{ route('vittles.orders') }}">Pedidos</a>
                     <a @class(['active' => request()->routeIs('vittles.result')]) href="{{ route('vittles.result') }}">Resultado</a>
+                    <a @class(['active' => request()->routeIs('vittles.readme')]) href="{{ route('vittles.readme') }}">README</a>
                     @if (auth()->user()->is_admin && app()->environment('local') && in_array(parse_url((string) config('vittles.base_url'), PHP_URL_HOST), ['127.0.0.1', 'localhost'], true) && in_array(request()->ip(), ['127.0.0.1', '::1'], true))
                         <a @class(['active' => request()->routeIs('admin.*')]) href="{{ route('admin.index') }}">ADMIN</a>
                     @endif

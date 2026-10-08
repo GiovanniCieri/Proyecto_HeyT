@@ -21,6 +21,7 @@ Para una ejecución por Artisan no hay respuesta web: buscar el `correlation_id`
 | `catalog.locations.page`, `catalog.menu.loaded` / `catalog.menu.failed` | `CatalogService::load` | Paginación y resultado de cada menú |
 | `order.validation_failed`, `order.post.started`, `order.place.finished` | `OrderService::place` | Decisión sobre una orden y resultado |
 | `order.reconcile.started` / `order.reconcile.unknown` | `OrderService::reconcileUnknown` | Conciliación tras un POST incierto |
+| `order.history.saved` / `order.history.failed` | `ConfirmedOrderStore::record` | Proyección local de un pedido confirmado; el fallo no cambia la respuesta del POS |
 | `vittles.http.attempt` | `VittlesClient::authenticate` o `VittlesClient::send` | Cada intento real al mock, incluidos 429, 500 y fallos de conexión |
 | `admin.probe.started` / `admin.probe.failed` | `AdminController::probe` | Prueba guiada desde ADMIN |
 

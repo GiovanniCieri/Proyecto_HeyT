@@ -17,13 +17,16 @@
             <p class="result-status">{{ $result['status'] }}</p>
             <p class="result-id">{{ $result['order']['id'] ?? 'Sin ID confirmado' }}</p>
             <div class="detail-row"><span>Location</span><strong>{{ $result['location']['name'] }} · {{ $result['location']['id'] }}</strong></div>
-            <div class="detail-row"><span>Producto</span><strong>{{ $result['item']['name'] }} × 2</strong></div>
+            <div class="detail-row"><span>Producto</span><strong>{{ $result['item']['name'] }} × {{ $result['quantity'] }}</strong></div>
             <div class="detail-row"><span>Total devuelto por Vittles</span><strong class="estimate">{{ isset($result['order']) ? '$'.$result['order']['total'] : '—' }}</strong></div>
         </div>
         @if (isset($result['message']))
             <div class="notice {{ $result['status'] === 'UNKNOWN' ? 'warning' : 'error' }}" role="alert">{{ $result['message'] }}</div>
         @endif
         <a class="secondary-button" href="{{ route('vittles.order') }}">Volver a nueva orden →</a>
+        @if (isset($result['order']))
+            <a class="secondary-button" href="{{ route('vittles.orders', ['location' => $result['location']['id']]) }}">Ver pedidos de esta sede →</a>
+        @endif
     </section>
 
     <aside class="panel coverage">

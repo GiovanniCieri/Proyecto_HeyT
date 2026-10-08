@@ -16,8 +16,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/', [VittlesController::class, 'index'])->name('vittles.order');
     Route::get('/locations', [VittlesController::class, 'locations'])->name('vittles.locations');
+    Route::get('/orders', [VittlesController::class, 'orders'])->name('vittles.orders');
     Route::post('/orders', [VittlesController::class, 'place'])->name('vittles.place');
     Route::get('/result', [VittlesController::class, 'result'])->name('vittles.result');
+    Route::get('/readme', [VittlesController::class, 'readme'])->name('vittles.readme');
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::post('/admin/probe', [AdminController::class, 'probe'])->name('admin.probe');
 });

@@ -19,3 +19,5 @@ Los archivos se nombran `AAAA-MM-DD_NN_ID_descripcion.md`. `NN` conserva el orde
 | 13 | [DOC-001](2026-10-08_13_DOC-001_comentarios-codigo.md) | Propósito y motivos junto a funciones, rutas y tests |
 | 14 | [WEB-003](2026-10-08_14_WEB-003_recorrido-auditoria.md) | Recorrido guiado de discrepancias y evidencia |
 | 15 | [DOC-002](2026-10-08_15_DOC-002_readme-auditoria.md) | README de entrega actualizado con el recorrido de auditoría |
+| 16 | [SETUP-001](2026-10-08_16_SETUP-001_instalacion-arranque.md) | Instalación y arranque conjunto de Vittles y Laravel |
+| 17 | [DOC-003](2026-10-08_17_DOC-003_readme-arranque.md) | README y página de ayuda alineados con los scripts de arranque |

@@ -14,8 +14,14 @@
         <p class="section-number">01 · ENTREGA OBLIGATORIA</p>
         <h2>Una integración pequeña.</h2>
         <p>El comando se autentica con Vittles, obtiene todas las locations, intenta leer cada menú y crea una orden de <strong>2 unidades</strong> en la sede indicada. Imprime el estado, ID y total. Al ejecutarlo dos veces con los mismos parámetros, recupera la orden existente.</p>
-        <pre class="readme-command">php artisan vittles:order loc_1001 "Buffalo Wings (12)"</pre>
-        <p class="muted">Primero hay que iniciar el mock con <code>py -3 docs/Docs_API/vittles/mock_server.py</code> y configurar las credenciales en <code>app/.env</code>. En macOS/Linux se usa <code>python3</code>.</p>
+        <pre class="readme-command"># Desde la raíz, Windows PowerShell
+.\scripts\install.ps1
+.\scripts\start.ps1
+
+# En otra terminal
+cd app
+php artisan vittles:order loc_1001 "Buffalo Wings (12)"</pre>
+        <p class="muted">En macOS/Linux: <code>bash scripts/install.sh</code> y <code>bash scripts/start.sh</code>. El instalador pide las credenciales del README original del mock cuando faltan. El arranque abre Vittles en <code>127.0.0.1:8422</code> y la web en <code>127.0.0.1:8000</code>.</p>
     </section>
     <section class="panel">
         <p class="section-number">02 · DEMO WEB</p>

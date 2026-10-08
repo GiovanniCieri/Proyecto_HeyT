@@ -10,6 +10,7 @@ use App\Support\DiagnosticLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use InvalidArgumentException;
 
@@ -46,18 +47,33 @@ class VittlesController extends Controller
         return view('vittles.readme');
     }
 
+    public function orderDetail(string $clientRef, ConfirmedOrderStore $confirmedOrders): View
+    {
+        $order = $confirmedOrders->findByReference($clientRef);
+        abort_if($order === null, 404);
+
+        return view('vittles.order-detail', ['order' => $order]);
+    }
+
     public function place(Request $request, OrderService $orders): RedirectResponse
     {
         $input = $request->validate([
             'location' => ['required', 'string', 'max:80'],
-            'item' => ['required', 'string', 'max:200'],
-            'quantity' => ['required', 'integer', 'between:1,20'],
+            'items' => ['required', 'array', 'min:1', 'max:100'],
+            'items.*.item_id' => ['required', 'string', 'max:80'],
+            'items.*.quantity' => ['required', 'integer', 'between:0,20'],
             'request_key' => ['nullable', 'string', 'max:80'],
         ]);
+        $lines = array_values(array_filter(array_map(fn (array $line) => [
+            'item_id' => $line['item_id'], 'quantity' => (int) $line['quantity'],
+        ], $input['items']), fn (array $line) => $line['quantity'] > 0));
+        if ($lines === []) {
+            throw ValidationException::withMessages(['items' => 'Elegí al menos un producto con cantidad mayor que cero.']);
+        }
 
         try {
             $webKey = 'web-user-'.$request->user()->getAuthIdentifier().'-'.($input['request_key'] ?? 'demo');
-            $result = $orders->place($input['location'], $input['item'], $webKey, (int) $input['quantity']);
+            $result = $orders->placeMany($input['location'], $lines, $webKey);
         } catch (InvalidArgumentException|VittlesException $e) {
             $this->diagnostics->event('warning', 'web.order.failed', __METHOD__, ['error_type' => $e::class, 'http_status' => $e instanceof VittlesException ? $e->httpStatus : null]);
 
@@ -65,9 +81,8 @@ class VittlesController extends Controller
         }
 
         $this->diagnostics->event('info', 'web.order.finished', __METHOD__, ['result' => $result['status'], 'order_id' => $result['order']['id'] ?? null]);
-        $request->session()->put('vittles_last_result', $result);
 
-        return redirect()->route('vittles.result');
+        return redirect()->route('vittles.result')->with('vittles_last_result', $result);
     }
 
     public function result(Request $request): View|RedirectResponse
@@ -76,7 +91,7 @@ class VittlesController extends Controller
         if (! is_array($result)) {
             $this->diagnostics->event('info', 'web.result.empty', __METHOD__);
 
-            return redirect()->route('vittles.order');
+            return redirect()->route('vittles.orders');
         }
 
         return view('vittles.result', ['result' => $result]);

@@ -16,6 +16,7 @@ Mostrar por sede los pedidos que esta integración confirmó, sin afirmar que so
 - [x] Excluir rechazos y resultados inciertos del listado de pedidos confirmados.
 - [x] Declarar que el historial local puede sobrevivir a un reinicio del mock.
 - [x] Probar filtro, deduplicación y ausencia de llamadas al POS al leer la página.
+- [x] Guardar las líneas de varios productos y ofrecer detalle persistente por referencia.
 
 ## Criterios de aceptación
 

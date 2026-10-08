@@ -11,7 +11,8 @@ Ofrecer una página `/readme` que explique el ejercicio, el comando, las decisio
 ## Tareas
 
 - [x] Explicar el alcance obligatorio y la ampliación web por separado.
-- [x] Aclarar que la cantidad del comando es siempre 2 y que la web admite de 1 a 20.
+- [x] Aclarar que la cantidad del comando es siempre 2 de un producto y que la web admite varias líneas de 1 a 20.
+- [x] Diferenciar consulta en vivo por ID, listado local y comprobante inmediato.
 - [x] Enumerar qué se dejó fuera a propósito y por qué.
 - [x] Declarar el uso de IA y el límite de idempotencia del mock.
 - [x] Mantener el README.md raíz breve y con comando exacto.

@@ -20,8 +20,11 @@
     <section class="panel">
         <p class="section-number">02 · DEMO WEB</p>
         <h2>La ampliación visual.</h2>
-        <p>La web permite elegir una cantidad de 1 a 20 y consultar pedidos confirmados por sede. Esa opción es una ampliación: <strong>el comando del ejercicio siempre envía 2</strong>. La cantidad y la cuenta local forman parte de la referencia idempotente, así que cambiar la cantidad representa otra intención de compra sin reutilizar pedidos de otra cuenta.</p>
+        <p>La web permite seleccionar varios productos del mismo menú, con 1 a 20 unidades por línea, y consultar pedidos confirmados por sede. Es una ampliación: <strong>el comando del ejercicio siempre envía 2</strong> de un solo producto. La combinación de productos, cantidades y cuenta local forma la referencia idempotente.</p>
         <p>El historial de Pedidos guarda confirmaciones observadas por esta aplicación. No es una lista completa del POS. ADMIN permite inspeccionar requests y respuestas del mock local.</p>
+        <pre class="readme-command">php artisan vittles:show ord_5501
+php artisan vittles:orders loc_1001</pre>
+        <p class="muted"><code>vittles:show</code> consulta el POS por ID; <code>vittles:orders</code> consulta solo el historial local. Resultado es un comprobante inmediato; después se revisa el pedido desde Pedidos.</p>
     </section>
     <section class="panel">
         <p class="section-number">03 · DECISIONES</p>

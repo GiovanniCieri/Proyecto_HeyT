@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/locations', [VittlesController::class, 'locations'])->name('vittles.locations');
     Route::get('/orders', [VittlesController::class, 'orders'])->name('vittles.orders');
     Route::post('/orders', [VittlesController::class, 'place'])->name('vittles.place');
+    Route::get('/orders/{clientRef}', [VittlesController::class, 'orderDetail'])->name('vittles.order-detail');
     Route::get('/result', [VittlesController::class, 'result'])->name('vittles.result');
     Route::get('/readme', [VittlesController::class, 'readme'])->name('vittles.readme');
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');

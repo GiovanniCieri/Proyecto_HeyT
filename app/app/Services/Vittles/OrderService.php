@@ -18,17 +18,22 @@ class OrderService
 
     public function place(string $locationId, string $itemName, string $requestKey = 'demo', int $quantity = 2): array
     {
-        $this->diagnostics->event('info', 'order.place.started', __METHOD__, ['quantity' => $quantity]);
+        return $this->placeSelection($locationId, [['name' => $itemName, 'quantity' => $quantity]], $requestKey);
+    }
+
+    public function placeMany(string $locationId, array $lines, string $requestKey = 'demo'): array
+    {
+        return $this->placeSelection($locationId, $lines, $requestKey);
+    }
+
+    private function placeSelection(string $locationId, array $lines, string $requestKey): array
+    {
+        $this->diagnostics->event('info', 'order.place.started', __METHOD__, ['items_count' => count($lines)]);
         $locationId = trim($locationId);
-        $itemName = trim($itemName);
         $requestKey = trim($requestKey);
-        if ($locationId === '' || $itemName === '' || $requestKey === '') {
+        if ($locationId === '' || $requestKey === '' || count($lines) === 0 || count($lines) > 20) {
             $this->diagnostics->event('warning', 'order.validation_failed', __METHOD__, ['reason_code' => 'missing_input']);
-            throw new InvalidArgumentException('Location, nombre de producto y clave de solicitud son obligatorios.');
-        }
-        if ($quantity < 1 || $quantity > 20) {
-            $this->diagnostics->event('warning', 'order.validation_failed', __METHOD__, ['reason_code' => 'quantity_out_of_range']);
-            throw new InvalidArgumentException('La cantidad debe estar entre 1 y 20.');
+            throw new InvalidArgumentException('Elegí una location, entre 1 y 20 productos y una clave de solicitud.');
         }
 
         $catalog = $this->catalog->load();
@@ -44,30 +49,52 @@ class OrderService
             throw new InvalidArgumentException('No se pudo leer el menú de '.$locationId.': '.($menu['message'] ?? 'sin información').'.');
         }
 
-        $items = array_values(array_filter($menu['items'], fn (array $item) => $item['name'] === $itemName));
-        if (count($items) === 0) {
-            $this->diagnostics->event('warning', 'order.validation_failed', __METHOD__, ['location_id' => $locationId, 'reason_code' => 'item_unknown']);
-            throw new InvalidArgumentException('El producto «'.$itemName.'» no existe en el menú de '.$locationId.'.');
-        }
-        if (count($items) > 1) {
-            $this->diagnostics->event('warning', 'order.validation_failed', __METHOD__, ['location_id' => $locationId, 'reason_code' => 'item_ambiguous']);
-            throw new InvalidArgumentException('Hay varios productos con ese nombre exacto en '.$locationId.'.');
-        }
-        $item = $items[0];
-        if (! $item['available']) {
-            $this->diagnostics->event('warning', 'order.validation_failed', __METHOD__, ['location_id' => $locationId, 'reason_code' => 'item_unavailable']);
-            throw new InvalidArgumentException('El producto «'.$itemName.'» no está disponible en '.$locationId.'.');
+        $resolved = [];
+        $seen = [];
+        foreach ($lines as $line) {
+            $quantity = $line['quantity'] ?? null;
+            if (! is_int($quantity) || $quantity < 1 || $quantity > 20) {
+                $this->diagnostics->event('warning', 'order.validation_failed', __METHOD__, ['reason_code' => 'quantity_out_of_range']);
+                throw new InvalidArgumentException('Cada cantidad debe estar entre 1 y 20.');
+            }
+            $name = $line['name'] ?? null;
+            $id = $line['item_id'] ?? null;
+            if ((! is_string($name) || trim($name) === '') && (! is_string($id) || $id === '')) {
+                throw new InvalidArgumentException('Cada producto debe tener nombre exacto o ID de menú.');
+            }
+            $items = array_values(array_filter($menu['items'], fn (array $item) => $id !== null ? $item['id'] === $id : $item['name'] === trim($name)));
+            if (count($items) !== 1) {
+                $reason = count($items) === 0 ? 'item_unknown' : 'item_ambiguous';
+                $this->diagnostics->event('warning', 'order.validation_failed', __METHOD__, ['location_id' => $locationId, 'reason_code' => $reason]);
+                throw new InvalidArgumentException(count($items) === 0 ? 'Un producto no existe en el menú de '.$locationId.'.' : 'Hay varios productos con ese nombre exacto en '.$locationId.'.');
+            }
+            $item = $items[0];
+            if (! $item['available']) {
+                $this->diagnostics->event('warning', 'order.validation_failed', __METHOD__, ['location_id' => $locationId, 'reason_code' => 'item_unavailable']);
+                throw new InvalidArgumentException('El producto «'.$item['name'].'» no está disponible en '.$locationId.'.');
+            }
+            if (isset($seen[$item['id']])) {
+                throw new InvalidArgumentException('El mismo producto aparece dos veces en el pedido.');
+            }
+            $seen[$item['id']] = true;
+            $resolved[] = ['item' => $item, 'quantity' => $quantity];
         }
 
-        $ref = 'heyt-'.substr(hash('sha256', json_encode([$requestKey, $locationId, $itemName, $quantity], JSON_UNESCAPED_UNICODE)), 0, 32);
+        $canonical = array_map(fn (array $line) => [$line['item']['id'], $line['quantity']], $resolved);
+        usort($canonical, fn (array $a, array $b) => strcmp($a[0], $b[0]));
+        $referenceParts = count($resolved) === 1
+            ? [$requestKey, $locationId, $resolved[0]['item']['name'], $resolved[0]['quantity']]
+            : ['multi-v1', $requestKey, $locationId, $canonical];
+        $ref = 'heyt-'.substr(hash('sha256', json_encode($referenceParts, JSON_UNESCAPED_UNICODE)), 0, 32);
         $this->diagnostics->event('info', 'order.reference.ready', __METHOD__, ['location_id' => $locationId, 'client_ref' => $ref]);
         $context = [
-            'location' => $matches[0], 'item' => $item, 'quantity' => $quantity,
+            'location' => $matches[0], 'item' => $resolved[0]['item'],
+            'items' => $resolved, 'quantity' => array_sum(array_column($resolved, 'quantity')),
             'client_ref' => $ref, 'catalog' => $catalog,
         ];
 
         try {
-            $result = Cache::store('file')->lock('vittles-order-'.$ref, 20)->block(8, function () use ($ref, $locationId, $item, $context, $quantity) {
+            $result = Cache::store('file')->lock('vittles-order-'.$ref, 20)->block(8, function () use ($ref, $locationId, $resolved, $context) {
                 $found = $this->findByReference($ref);
                 if (count($found) > 1) {
                     $this->diagnostics->event('warning', 'order.lookup.ambiguous', __METHOD__, ['client_ref' => $ref, 'items_count' => count($found)]);
@@ -83,7 +110,7 @@ class OrderService
                     $order = $this->client->createOrder([
                         'location_id' => $locationId,
                         'client_ref' => $ref,
-                        'items' => [['item_id' => $item['id'], 'quantity' => $quantity]],
+                        'items' => array_map(fn (array $line) => ['item_id' => $line['item']['id'], 'quantity' => $line['quantity']], $resolved),
                     ], $locationId);
                 } catch (UnknownOutcome $e) {
                     $this->diagnostics->event('warning', 'order.post.uncertain', __METHOD__, ['client_ref' => $ref, 'error_type' => $e::class]);

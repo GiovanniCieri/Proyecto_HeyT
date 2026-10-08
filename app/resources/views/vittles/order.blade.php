@@ -6,7 +6,7 @@
 <section class="hero">
     <p class="eyebrow">INTEGRACIÓN VITTLES POS · 01 ÓRDENES</p>
     <h1>Una orden, directo al <em>POS.</em></h1>
-    <p class="hero-copy">Elegí una sede y un producto. Consultamos todos los menús y enviamos una orden a la sede elegida.</p>
+    <p class="hero-copy">Elegí una sede y uno o varios productos. Consultamos todos los menús y enviamos una sola orden a la sede elegida.</p>
 </section>
 
 <div class="content-grid">
@@ -32,15 +32,13 @@
                     </option>
                 @endforeach
             </select>
-            <label for="item">Producto por nombre exacto</label>
-            <select id="item" name="item" required @disabled(count($catalog['locations']) === 0)></select>
+            <label>Productos y cantidades</label>
+            <div id="order-items" class="order-items"></div>
             <p id="menu-state" class="field-hint" aria-live="polite"></p>
-            <label for="quantity">Cantidad</label>
-            <input id="quantity" name="quantity" type="number" min="1" max="20" step="1" value="{{ old('quantity', 2) }}" required>
-            <p class="field-help">La demo web permite elegir entre 1 y 20. El comando del ejercicio siempre usa 2.</p>
+            <p class="field-help">Poné 0 en los productos que no quieras. Cada producto admite de 1 a 20 unidades; el comando del ejercicio conserva un solo producto con cantidad 2.</p>
             <label for="request_key">Identificador de compra <span class="muted">(opcional)</span></label>
             <input id="request_key" name="request_key" type="text" maxlength="80" value="{{ old('request_key', 'demo') }}">
-            <p class="field-help">Para tu cuenta, la misma sede, producto, cantidad e identificador recuperan el pedido existente. Cambialo para iniciar otra compra.</p>
+            <p class="field-help">Para tu cuenta, la misma sede, combinación de productos, cantidades e identificador recuperan el pedido existente. Cambialo para iniciar otra compra.</p>
             <div class="detail-row"><span>Total estimado</span><strong id="estimate" class="estimate">—</strong></div>
             <button id="submit-order" class="primary-button" type="submit" @disabled(count($catalog['locations']) === 0)>Crear orden →</button>
             <p class="fine-print">El total definitivo es el que devuelve Vittles. Los pedidos confirmados quedan en el historial local.</p>
@@ -69,48 +67,67 @@
 (() => {
     const menus = @json($catalog['menus']);
     const locationField = document.getElementById('location');
-    const itemField = document.getElementById('item');
+    const itemsContainer = document.getElementById('order-items');
     const state = document.getElementById('menu-state');
     const estimate = document.getElementById('estimate');
     const submit = document.getElementById('submit-order');
-    const quantityField = document.getElementById('quantity');
-    const previousItem = @json(old('item', ''));
+    const previousItems = @json(old('items', []));
 
     function updateEstimate() {
-        const menu = menus[locationField.value];
-        const item = menu?.items?.find(entry => entry.name === itemField.value);
-        const quantity = Number(quantityField.value);
-        estimate.textContent = item && Number.isInteger(quantity) && quantity >= 1 && quantity <= 20
-            ? '$' + (Number(item.price) * quantity).toFixed(2) : '—';
+        let total = 0;
+        let selected = 0;
+        for (const input of itemsContainer.querySelectorAll('input[data-price]')) {
+            const quantity = Number(input.value);
+            if (!Number.isInteger(quantity) || quantity < 0 || quantity > 20) {
+                estimate.textContent = '—';
+                submit.disabled = true;
+                return;
+            }
+            if (quantity > 0) selected++;
+            total += Number(input.dataset.price) * quantity;
+        }
+        estimate.textContent = selected ? '$' + total.toFixed(2) : '—';
+        submit.disabled = selected === 0 || selected > 20;
     }
 
     function updateItems() {
         const menu = menus[locationField.value];
-        itemField.replaceChildren();
+        itemsContainer.replaceChildren();
         if (menu?.status !== 'loaded') {
             state.textContent = menu?.status === 'forbidden' ? 'Esta sede no permite leer el menú (403).' : 'No se pudo consultar este menú.';
-            itemField.disabled = true;
             submit.disabled = true;
             estimate.textContent = '—';
             return;
         }
         const available = menu.items.filter(item => item.available);
-        for (const item of available) {
-            const option = document.createElement('option');
-            option.value = item.name;
-            option.textContent = `${item.name} · $${item.price}`;
-            itemField.append(option);
+        for (const [index, item] of available.entries()) {
+            const row = document.createElement('div');
+            row.className = 'order-item-row';
+            const label = document.createElement('label');
+            label.htmlFor = `item-quantity-${index}`;
+            label.textContent = `${item.name} · $${item.price}`;
+            const id = document.createElement('input');
+            id.type = 'hidden';
+            id.name = `items[${index}][item_id]`;
+            id.value = item.id;
+            const quantity = document.createElement('input');
+            quantity.type = 'number';
+            quantity.id = label.htmlFor;
+            quantity.name = `items[${index}][quantity]`;
+            quantity.min = '0';
+            quantity.max = '20';
+            quantity.step = '1';
+            quantity.value = previousItems.find(line => line.item_id === item.id)?.quantity ?? '0';
+            quantity.dataset.price = item.price;
+            quantity.addEventListener('input', updateEstimate);
+            row.append(label, id, quantity);
+            itemsContainer.append(row);
         }
-        if (available.some(item => item.name === previousItem)) itemField.value = previousItem;
         state.textContent = available.length ? 'Solo se muestran productos disponibles en esta sede.' : 'Esta sede no tiene productos disponibles.';
-        itemField.disabled = available.length === 0;
-        submit.disabled = available.length === 0;
         updateEstimate();
     }
 
     locationField.addEventListener('change', updateItems);
-    itemField.addEventListener('change', updateEstimate);
-    quantityField.addEventListener('input', updateEstimate);
     updateItems();
 })();
 </script>

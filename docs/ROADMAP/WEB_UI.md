@@ -20,10 +20,10 @@ Mantener las páginas implementadas en Laravel + Blade: Nueva orden, Sedes y men
 
 ## Tareas posteriores
 
-- [x] Página Nueva orden: sede única, ítem del menú, cantidad web de 1 a 20, disponibilidad y estimado. El comando conserva 2.
+- [x] Página Nueva orden: sede única, varios ítems disponibles del menú, cantidad web de 1 a 20 por línea y estimado. El comando conserva un ítem y 2 unidades.
 - [x] Página Sedes y menús: cinco lecturas visibles, incluido el 403 de la sede inactiva.
-- [x] Página Resultado: creada, existente, recuperada, rechazada e incierta, con ID y total cuando proceda.
-- [x] Página Pedidos: historial local de confirmaciones de esta integración, filtrado por location.
+- [x] Página Resultado: comprobante inmediato creado, existente, recuperado, rechazado o incierto; fuera de la navegación permanente.
+- [x] Página Pedidos: historial local de confirmaciones de esta integración, filtrado por location, con detalle persistente.
 - [x] Página README: alcance, decisiones, exclusiones e IA.
 - [x] Comprobar adaptación a 390 px sin desbordamiento horizontal.
 - [ ] Completar auditoría de accesibilidad y comparación fina de capturas con la web de referencia.

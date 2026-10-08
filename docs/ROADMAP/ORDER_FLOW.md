@@ -35,3 +35,4 @@ Recibir location e ítem por parámetro, validar el producto en el menú de esa 
 - [x] Incluir la cantidad en `client_ref`: dos cantidades diferentes son intenciones distintas.
 - [x] Separar la clave web por usuario local para no reutilizar accidentalmente la compra de otra cuenta o la del comando CLI.
 - [x] Mostrar la cantidad real en el resultado y calcular solo una estimación visual; el total definitivo sigue viniendo del POS.
+- [x] Reutilizar la validación, búsqueda, conciliación y bloqueo para una orden web con varias líneas, sin alterar la firma del comando evaluable.

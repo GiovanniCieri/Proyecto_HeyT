@@ -85,13 +85,58 @@ class VittlesIntegrationTest extends TestCase
         $this->assertSame(2, $posts);
     }
 
+    public function test_multi_product_order_is_idempotent_even_when_selection_order_changes(): void
+    {
+        $posts = 0;
+        $reference = null;
+        $this->fakeVittles($posts, $reference);
+
+        $service = app(OrderService::class);
+        $first = $service->placeMany('loc_1001', [
+            ['item_id' => 'itm_91', 'quantity' => 1],
+            ['item_id' => 'itm_88', 'quantity' => 2],
+        ], 'multi-demo');
+        $second = $service->placeMany('loc_1001', [
+            ['item_id' => 'itm_88', 'quantity' => 2],
+            ['item_id' => 'itm_91', 'quantity' => 1],
+        ], 'multi-demo');
+
+        $this->assertSame('CREATED', $first['status']);
+        $this->assertSame('EXISTING', $second['status']);
+        $this->assertSame($first['client_ref'], $second['client_ref']);
+        $this->assertSame('39.25', $first['order']['total']);
+        $this->assertSame($first['order'], $second['order']);
+        $this->assertSame(1, $posts);
+        Http::assertSent(fn (Request $request) => $request->method() === 'POST'
+            && str_ends_with($request->url(), '/v1/orders')
+            && count($request->data()['items']) === 2);
+    }
+
+    public function test_invalid_second_product_prevents_the_entire_order_post(): void
+    {
+        $posts = 0;
+        $reference = null;
+        $this->fakeVittles($posts, $reference);
+
+        $this->expectExceptionMessage('no existe en el menú');
+        try {
+            app(OrderService::class)->placeMany('loc_1001', [
+                ['item_id' => 'itm_88', 'quantity' => 2],
+                ['item_id' => 'itm_unknown', 'quantity' => 1],
+            ], 'invalid-second');
+        } finally {
+            $this->assertSame(0, $posts);
+        }
+    }
+
     private function fakeVittles(int &$posts, ?string &$reference, bool $reject = false, bool $malformedPost = false): void
     {
         config()->set('vittles.base_url', 'http://vittles.test');
         config()->set('vittles.client_id', 'test-id');
         config()->set('vittles.client_secret', 'test-secret');
 
-        Http::fake(function (Request $request) use (&$posts, &$reference, $reject, $malformedPost) {
+        $total = 31;
+        Http::fake(function (Request $request) use (&$posts, &$reference, &$total, $reject, $malformedPost) {
             $path = parse_url($request->url(), PHP_URL_PATH);
             $query = [];
             parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
@@ -116,19 +161,20 @@ class VittlesIntegrationTest extends TestCase
                     return Http::response(['error' => 'forbidden'], 403);
                 }
 
-                return Http::response(['menuItems' => [[
-                    'id' => 'itm_88', 'name' => 'Buffalo Wings (12)', 'price' => '15.50',
-                    'available' => $matches[1] === 'loc_1005' ? 0 : 1,
-                ]]], 200);
+                return Http::response(['menuItems' => [
+                    ['id' => 'itm_88', 'name' => 'Buffalo Wings (12)', 'price' => '15.50', 'available' => $matches[1] === 'loc_1005' ? 0 : 1],
+                    ['id' => 'itm_91', 'name' => 'Loaded Fries', 'price' => '8.25', 'available' => 1],
+                ]], 200);
             }
             if ($path === '/v1/orders' && $request->method() === 'GET') {
                 return Http::response(['data' => $reference && ($query['client_ref'] ?? null) === $reference
-                    ? [['id' => 'ord_5501', 'status' => 'ACCEPTED', 'total' => 31, 'client_ref' => $reference]]
+                    ? [['id' => 'ord_5501', 'status' => 'ACCEPTED', 'total' => $total, 'client_ref' => $reference]]
                     : []], 200);
             }
             if ($path === '/v1/orders' && $request->method() === 'POST') {
                 $posts++;
                 $reference = $request->data()['client_ref'];
+                $total = array_sum(array_map(fn (array $line) => ($line['item_id'] === 'itm_88' ? 15.5 : 8.25) * $line['quantity'], $request->data()['items']));
                 if ($reject) {
                     return Http::response(['status' => 'REJECTED', 'reason' => 'not allowed'], 200);
                 }
@@ -136,7 +182,7 @@ class VittlesIntegrationTest extends TestCase
                     return Http::response([], 201);
                 }
 
-                return Http::response(['id' => 'ord_5501', 'status' => 'ACCEPTED', 'total' => 15.5 * $request->data()['items'][0]['quantity'], 'client_ref' => $reference], 201);
+                return Http::response(['id' => 'ord_5501', 'status' => 'ACCEPTED', 'total' => $total, 'client_ref' => $reference], 201);
             }
 
             return Http::response(['error' => 'unexpected request'], 500);

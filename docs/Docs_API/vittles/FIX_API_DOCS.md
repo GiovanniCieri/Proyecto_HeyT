@@ -89,6 +89,8 @@ Content-Type: application/json
 
 **Respuesta aceptada observada:** HTTP 201 con `id`, `status: "ACCEPTED"`, `total`, `created_at`, `updated` y `client_ref`. Para dos unidades de `itm_88` en `loc_1001`, el total observado fue `31.0`. El total procede del menú del servidor, no de un importe enviado por el cliente. Ejemplo con valores variables reemplazados:
 
+**Varias líneas, observado:** `items` admite más de una línea dentro de una misma orden. Una petición al mock con 2 unidades de `itm_88` y 1 de `itm_91` en `loc_1001` devolvió HTTP 201, ID `ord_5504` y total `39.25`; repetir la misma intención mediante la integración devolvió `EXISTING` con el mismo ID y total. **Derivado de `do_POST`:** el mock comprueba cada línea contra el menú de la location, rechaza la orden si alguna falla y suma `price × quantity` de las líneas válidas. El comando obligatorio del ejercicio sigue enviando una sola línea.
+
 ```json
 {
   "id": "ord_5502",

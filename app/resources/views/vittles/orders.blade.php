@@ -33,8 +33,9 @@
             <div class="orders-list">
                 @foreach ($locationOrders as $order)
                     <article class="order-card">
-                        <div><p class="order-card-label">{{ $order->order_id }}</p><h3>{{ $order->item_name }} <span>× {{ $order->quantity }}</span></h3><p class="muted">Confirmado localmente: {{ $order->updated_at }} · Ref. <code>{{ $order->client_ref }}</code></p></div>
-                        <strong>${{ number_format((float) $order->total, 2, '.', '') }}</strong>
+                        @php $lines = json_decode($order->items_json ?? '', true) ?: [['name' => $order->item_name, 'quantity' => $order->quantity]]; @endphp
+                        <div><p class="order-card-label">{{ $order->order_id }}</p><h3>{{ count($lines) }} {{ count($lines) === 1 ? 'producto' : 'productos' }} <span>· {{ $order->quantity }} unidades</span></h3><p class="muted">{{ implode(' · ', array_map(fn ($line) => $line['name'].' × '.$line['quantity'], $lines)) }}</p><p class="muted">Confirmado localmente: {{ $order->updated_at }}</p></div>
+                        <div><strong>${{ number_format((float) $order->total, 2, '.', '') }}</strong><a class="text-link" href="{{ route('vittles.order-detail', ['clientRef' => $order->client_ref]) }}">Ver detalle →</a></div>
                     </article>
                 @endforeach
             </div>

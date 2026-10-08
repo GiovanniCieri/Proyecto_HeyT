@@ -13,6 +13,7 @@ class ConfirmedOrderStore
     public function record(array $result): void
     {
         try {
+            $lines = $result['items'] ?? [['item' => $result['item'], 'quantity' => $result['quantity']]];
             DB::table('confirmed_orders')->upsert([[
                 'client_ref' => $result['client_ref'],
                 'order_id' => $result['order']['id'],
@@ -21,12 +22,17 @@ class ConfirmedOrderStore
                 'item_id' => $result['item']['id'],
                 'item_name' => $result['item']['name'],
                 'quantity' => $result['quantity'],
+                'items_json' => json_encode(array_map(fn (array $line) => [
+                    'id' => $line['item']['id'],
+                    'name' => $line['item']['name'],
+                    'quantity' => $line['quantity'],
+                ], $lines), JSON_UNESCAPED_UNICODE),
                 'total' => $result['order']['total'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]], ['client_ref'], [
                 'order_id', 'location_id', 'location_name', 'item_id',
-                'item_name', 'quantity', 'total', 'updated_at',
+                'item_name', 'quantity', 'items_json', 'total', 'updated_at',
             ]);
             $this->diagnostics->event('info', 'order.history.saved', __METHOD__, [
                 'client_ref' => $result['client_ref'],
@@ -57,5 +63,10 @@ class ConfirmedOrderStore
             ->limit(100)
             ->get()
             ->all();
+    }
+
+    public function findByReference(string $clientRef): ?object
+    {
+        return DB::table('confirmed_orders')->where('client_ref', $clientRef)->first();
     }
 }

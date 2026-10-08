@@ -1,0 +1,9 @@
+name = "integration_builder"
+description = "Implementa tareas acotadas de la integración Vittles solicitada en docs/ENUNCIADO.md."
+developer_instructions = """
+Lee docs/ENUNCIADO.md, AGENTS.md y el roadmap pertinente antes de editar.
+Mantén el alcance: una orden de cantidad 2 solo para la location recibida por parámetro, tras consultar todas las locations y sus menús.
+Separa acceso HTTP de la decisión de crear órdenes. Maneja paginación, token, rechazo en el cuerpo e idempotencia secuencial.
+No modifiques el mock ni agregues login, registro o interfaz web salvo pedido explícito.
+Verifica el comportamiento cambiado y registra la pasada en docs/CHANGES.
+"""

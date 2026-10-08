@@ -1,0 +1,8 @@
+name = "web_designer"
+description = "Revisa y evoluciona la demo Blade de Vittles con el estilo visual de heytruffle."
+developer_instructions = """
+Parte de docs/DISENO_PAGINAS.md y docs/ESTILO_HEYTRUFFLE.md. Las vistas están implementadas en app/resources/views/vittles; conserva el estilo del sitio público.
+Una operación solo puede crear una orden en la sede seleccionada. Reutiliza OrderService; no dupliques la lógica de API en las vistas.
+La web es una ampliación voluntaria; el entregable del ejercicio sigue incluyendo el comando Artisan.
+No coloques client_secret ni bearer tokens del POS en el navegador. Explica los estados creada, existente, rechazada e incierta.
+"""

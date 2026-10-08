@@ -1,0 +1,62 @@
+:root{--cream:#f6f3ec;--orange:#ef7200;--dark:#251f21;--deep:#1b1719;--panel:#30282b;--muted:#c5bcb8;--line:#51464a}
+*{box-sizing:border-box}
+html{background:var(--dark)}
+body{margin:0;color:var(--cream);background:var(--dark);font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:15px}
+a{color:inherit}
+button,select{font:inherit}
+button{cursor:pointer}
+.site-header{background:#1e191b;position:relative;z-index:2}
+.header-inner{max-width:1320px;margin:auto;min-height:80px;padding:14px 5%;display:flex;align-items:center;justify-content:space-between;gap:22px}
+.wordmark{text-decoration:none;font:700 30px "Gowun Batang",Georgia,serif;letter-spacing:-.065em;white-space:nowrap}
+.wordmark span{color:var(--orange)}
+.site-header nav{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px}
+.site-header nav a{text-decoration:none;font-size:14px;padding:12px 17px;border-radius:999px;transition:background .15s}
+.site-header nav a:hover{background:#49383b}
+.site-header nav a.active{background:var(--orange);font-weight:700}
+.hero{text-align:center;padding:74px 24px 92px;background:radial-gradient(ellipse 54% 72% at 22% 46%,rgba(101,129,195,.65),transparent 95%),radial-gradient(ellipse 43% 78% at 79% 45%,rgba(227,125,64,.6),transparent 98%),radial-gradient(ellipse 43% 55% at 52% 86%,rgba(163,113,160,.45),transparent 95%),#353240}
+.eyebrow,.section-number{font-size:11px;letter-spacing:.16em;font-weight:700;text-transform:uppercase}
+.eyebrow{margin:0;color:var(--cream)}
+h1,h2{font-family:"Gowun Batang",Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.045em}
+h1{font-size:clamp(40px,5vw,66px);line-height:1.08;max-width:760px;margin:20px auto 14px}
+h1 em{font-style:normal;color:var(--orange)}
+.hero-copy{max-width:640px;margin:0 auto;line-height:1.6;font-size:16px}
+.content-grid{max-width:1220px;margin:-34px auto 72px;padding:0 24px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.85fr);align-items:start;gap:24px;position:relative}
+.panel{min-width:0;background:var(--panel);border:1px solid rgba(255,255,255,.09);border-radius:30px;padding:35px;box-shadow:0 14px 34px rgba(0,0,0,.11)}
+.section-number{color:var(--orange);margin:0 0 10px}
+h2{font-size:35px;line-height:1.14;margin:0 0 26px}
+label{display:block;margin:0 0 9px;font-size:13px;font-weight:600}
+select{appearance:auto;display:block;width:100%;min-height:54px;background:var(--deep);color:var(--cream);border:1px solid var(--line);border-radius:999px;padding:0 20px;margin-bottom:24px;font-size:15px}
+select:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #ffbc7d;outline-offset:3px}
+select:disabled,button:disabled{opacity:.5;cursor:not-allowed}
+.field-hint{min-height:18px;margin:-14px 0 14px;color:var(--muted);font-size:12px}
+.detail-row,.menu-row{display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding:16px 0}
+.detail-row>span{color:var(--muted)}
+.detail-row strong,.menu-row strong{text-align:right;font-weight:600}
+.detail-row:last-child,.menu-row:last-child{border-bottom:0}
+.estimate{font:400 30px "Gowun Batang",Georgia,serif!important;color:var(--orange)}
+.primary-button,.secondary-button{border:0;border-radius:999px;min-height:54px;padding:0 26px;font-weight:700;text-align:center;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.primary-button{background:var(--orange);color:var(--cream);width:100%;margin-top:24px;transition:box-shadow .2s,transform .2s}
+.primary-button:hover:not(:disabled){box-shadow:0 11px 28px rgba(239,114,0,.35);transform:translateY(-1px)}
+.secondary-button{background:#4b3f43;color:var(--cream);margin-top:22px}
+.secondary-button:hover{background:#67555b}
+.fine-print,.muted,.coverage>p:not(.section-number){color:var(--muted);line-height:1.6;font-size:13px}
+.fine-print{margin:16px 0 0}
+.coverage-line{display:flex;align-items:center;gap:11px;padding:15px 0;border-bottom:1px solid var(--line);font-size:14px}
+.orange-dot{width:8px;height:8px;flex:none;background:var(--orange);border-radius:50%}
+.text-link{display:inline-block;margin-top:22px;color:var(--orange);text-underline-offset:4px}
+.notice{padding:14px 18px;border-radius:14px;margin:16px 0;line-height:1.5;font-size:14px}
+.notice.error{background:#663c34;color:#fff0e9}
+.notice.warning{background:#66502b;color:#fff5dd}
+.location-list{display:grid;gap:10px}
+.location-choice{width:100%;text-align:left;background:var(--deep);color:var(--cream);border:1px solid var(--line);border-radius:17px;padding:17px 19px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.location-choice:hover,.location-choice[aria-pressed=true]{border-color:var(--orange)}
+.location-choice strong,.location-choice small{display:block}
+.location-choice small{color:var(--muted);margin-top:5px}
+.location-status{color:var(--orange);text-align:right;font-size:12px}
+.result-box{background:var(--deep);border-radius:22px;padding:27px}
+.result-status{font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--orange);margin:0}
+.result-id{font:400 44px "Gowun Batang",Georgia,serif;margin:8px 0 15px;overflow-wrap:anywhere}
+code{overflow-wrap:anywhere;color:var(--cream)}
+.site-footer{max-width:1320px;margin:auto;border-top:1px solid var(--line);padding:26px 5%;display:flex;justify-content:space-between;gap:15px;color:var(--muted);font-size:12px}
+.site-footer a{text-underline-offset:3px}
+@media(max-width:760px){.header-inner{align-items:flex-start;flex-direction:column}.site-header nav{justify-content:flex-start}.site-header nav a{font-size:12px;padding:9px 12px}.hero{padding:50px 18px 70px}.content-grid{grid-template-columns:1fr;margin-top:-25px;padding:0 16px}.panel{padding:25px;border-radius:24px}.site-footer{flex-direction:column}h2{font-size:30px}}

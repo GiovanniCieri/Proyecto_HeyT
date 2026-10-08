@@ -23,3 +23,14 @@ El arranque abre el mock en `127.0.0.1:8422` y la web en `http://127.0.0.1:8000`
 **Demos opcionales:** con ambos servicios levantados, abrir `http://127.0.0.1:8000/register` o abrir la consola desde la raíz con `.\scripts\console.cmd` (macOS/Linux: `bash scripts/console.sh`). La página `/audit` muestra cómo se descubrió y resolvió cada diferencia; navegarla no llama a Vittles. Ver [comandos](docs/COMMANDS.md) y [consola](docs/CONSOLE.md).
 
 **Uso de IA:** se usó Codex para analizar el mock, diseñar, implementar y revisar.
+
+<img width="1919" height="914" alt="image" src="https://github.com/user-attachments/assets/16fa8ed2-85e9-49cc-9c7a-6308275dfc42" />
+<img width="1898" height="907" alt="image" src="https://github.com/user-attachments/assets/2c610fce-e40c-4081-96db-927422ee3c6b" />
+<img width="1895" height="913" alt="image" src="https://github.com/user-attachments/assets/eb493d6f-73cf-4d30-9a96-5eabf7444213" />
+<img width="1900" height="911" alt="image" src="https://github.com/user-attachments/assets/4001d4c4-66cc-432d-9f5f-a5f478a6cb82" />
+<img width="1903" height="916" alt="image" src="https://github.com/user-attachments/assets/63e4f42b-70b9-4e51-aba0-c62834d511ad" />
+<img width="1896" height="911" alt="image" src="https://github.com/user-attachments/assets/037464a1-0111-404b-a6da-34c46f85e314" />
+
+
+
+

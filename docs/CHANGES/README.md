@@ -21,3 +21,6 @@ Los archivos se nombran `AAAA-MM-DD_NN_ID_descripcion.md`. `NN` conserva el orde
 | 15 | [DOC-002](2026-10-08_15_DOC-002_readme-auditoria.md) | README de entrega actualizado con el recorrido de auditoría |
 | 16 | [SETUP-001](2026-10-08_16_SETUP-001_instalacion-arranque.md) | Instalación y arranque conjunto de Vittles y Laravel |
 | 17 | [DOC-003](2026-10-08_17_DOC-003_readme-arranque.md) | README y página de ayuda alineados con los scripts de arranque |
+| 18 | [SETUP-002](2026-10-08_18_SETUP-002_progreso-instalacion.md) | Progreso y tiempo visible durante Composer |
+| 19 | [CLI-004](2026-10-08_19_CLI-004_acceso-directo-consola.md) | Acceso directo al menú interactivo desde la raíz |
+| 20 | [CLI-005](2026-10-08_20_CLI-005_acceso-consola-en-scripts.md) | Accesos de consola movidos a scripts |

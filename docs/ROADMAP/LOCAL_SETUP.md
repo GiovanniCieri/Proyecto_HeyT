@@ -13,6 +13,8 @@
 - [x] Arrancar mock y web desde un solo comando, comprobar puertos y limpiar procesos propios.
 - [x] Separar salida del mock que imprime credenciales de logs de errores.
 - [x] Documentar comandos, opciones y prueba de idempotencia.
+- [x] Mostrar actividad y tiempo transcurrido durante la fase larga de Composer.
+- [x] Abrir el menú interactivo desde la raíz con un solo comando, sin depender del navegador.
 - [ ] Ejecutar los scripts Bash en macOS/Linux real.
 
 ## Criterios de aceptación
@@ -21,3 +23,4 @@
 - Una segunda instalación conserva las cuentas locales y la configuración existente.
 - Si 8422 u 8000 ya están ocupados, no se mata el proceso externo.
 - El comando `vittles:order` funciona sin sesión web y conserva ID y total al repetirlo contra el mismo mock.
+- `scripts/console.cmd` y `scripts/console.sh` abren el mismo menú `vittles:console` desde la raíz.

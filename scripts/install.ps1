@@ -38,9 +38,41 @@ if ($LASTEXITCODE -ne 0) { Fail 'Se requiere Python 3.9 o superior.' }
 Write-Host '  PHP, Composer y Python listos.' -ForegroundColor Green
 
 Step 2 'Instalando dependencias PHP'
-Push-Location $app
-try { & composer install --no-interaction --prefer-dist; if ($LASTEXITCODE -ne 0) { Fail 'composer install fallo.' } }
-finally { Pop-Location }
+Write-Host '  Composer instala desde composer.lock; la generacion de autoload puede tardar varios minutos.' -ForegroundColor DarkGray
+$composerJob = Start-Job -ScriptBlock {
+    param($appPath)
+    Set-Location -LiteralPath $appPath
+    & composer install --no-interaction --prefer-dist 2>&1 | ForEach-Object { Write-Output $_.ToString() }
+    [pscustomobject]@{ ComposerExitCode = $LASTEXITCODE }
+} -ArgumentList $app
+$composerWatch = [Diagnostics.Stopwatch]::StartNew()
+$lastHeartbeat = 0
+$composerExit = $null
+$composerPhase = 'resolviendo dependencias'
+try {
+    do {
+        foreach ($entry in @(Receive-Job -Job $composerJob -ErrorAction SilentlyContinue)) {
+            if ($entry -is [string]) {
+                Write-Host "  $entry"
+                if ($entry -match 'Generating optimized autoload files') { $composerPhase = 'generando autoload optimizado' }
+                elseif ($entry -match 'Discovering packages|package:discover') { $composerPhase = 'descubriendo paquetes Laravel' }
+            } elseif ($null -ne $entry.PSObject.Properties['ComposerExitCode']) {
+                $composerExit = $entry.ComposerExitCode
+            }
+        }
+        $seconds = [int]$composerWatch.Elapsed.TotalSeconds
+        if ($composerJob.State -eq 'Running' -and $seconds - $lastHeartbeat -ge 8) {
+            Write-Host "  ... Composer sigue activo ($seconds s): $composerPhase" -ForegroundColor Yellow
+            $lastHeartbeat = $seconds
+        }
+        if ($composerJob.State -eq 'Running') { Wait-Job -Job $composerJob -Timeout 1 | Out-Null }
+    } while ($composerJob.State -eq 'Running' -or $composerJob.HasMoreData)
+} finally {
+    if ($composerJob.State -eq 'Running') { Stop-Job -Job $composerJob }
+    Remove-Job -Job $composerJob -Force
+}
+if ($composerExit -ne 0) { Fail 'composer install fallo. Revisa las lineas anteriores.' }
+Write-Host "  Dependencias listas en $([int]$composerWatch.Elapsed.TotalSeconds) s." -ForegroundColor Green
 
 Step 3 'Preparando configuracion'
 $envFile = Join-Path $app '.env'

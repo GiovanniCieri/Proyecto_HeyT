@@ -31,7 +31,7 @@ php artisan vittles:order loc_1001 "Buffalo Wings (12)"</pre>
         <pre class="readme-command">php artisan vittles:show ord_5501
 php artisan vittles:orders loc_1001</pre>
         <p class="muted"><code>vittles:show</code> consulta el POS por ID; <code>vittles:orders</code> consulta solo el historial local. Resultado es un comprobante inmediato; después se revisa el pedido desde Pedidos.</p>
-        <p class="muted">También podés abrir <code>php artisan vittles:console</code>: menú con las mismas cuentas, sedes, pedidos y diagnóstico ADMIN local. Desde allí podés ejecutar el comando del ejercicio sin escribirlo.</p>
+        <p class="muted">Desde la raíz, <code>.\scripts\console.cmd</code> (Windows) o <code>bash scripts/console.sh</code> (macOS/Linux) abre el menú con las mismas cuentas, sedes, pedidos y diagnóstico ADMIN local. Desde allí podés ejecutar el comando del ejercicio sin escribirlo.</p>
     </section>
     <section class="panel">
         <p class="section-number">03 · DECISIONES</p>

@@ -20,6 +20,6 @@ El arranque abre el mock en `127.0.0.1:8422` y la web en `http://127.0.0.1:8000`
 
 **Fuera de alcance a propósito:** pagos, stock propio, recuperación de contraseña, email verificado, despliegue y garantía distribuida de *exactly once*; el flujo solicitado no los necesita y la última requiere soporte del POS.
 
-**Demos opcionales:** con ambos servicios levantados, abrir `http://127.0.0.1:8000/register` o ejecutar `php artisan vittles:console` desde `app/`. La página `/audit` muestra cómo se descubrió y resolvió cada diferencia; navegarla no llama a Vittles. Ver [comandos](docs/COMMANDS.md) y [consola](docs/CONSOLE.md).
+**Demos opcionales:** con ambos servicios levantados, abrir `http://127.0.0.1:8000/register` o abrir la consola desde la raíz con `.\scripts\console.cmd` (macOS/Linux: `bash scripts/console.sh`). La página `/audit` muestra cómo se descubrió y resolvió cada diferencia; navegarla no llama a Vittles. Ver [comandos](docs/COMMANDS.md) y [consola](docs/CONSOLE.md).
 
 **Uso de IA:** se usó Codex para analizar el mock, diseñar, implementar y revisar.

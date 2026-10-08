@@ -17,7 +17,21 @@ python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3,9) else 1)' || die 
 printf '\033[32m  PHP, Composer y Python listos.\033[0m\n'
 
 step 2 'Instalando dependencias PHP'
-(cd "$app" && composer install --no-interaction --prefer-dist) || die 'composer install falló.'
+printf '  Composer instala desde composer.lock; autoload puede tardar varios minutos.\n'
+composer_started=$SECONDS
+last_heartbeat=0
+(cd "$app" && composer install --no-interaction --prefer-dist) &
+composer_pid=$!
+while kill -0 "$composer_pid" 2>/dev/null; do
+    sleep 1
+    elapsed=$((SECONDS - composer_started))
+    if kill -0 "$composer_pid" 2>/dev/null && (( elapsed - last_heartbeat >= 8 )); then
+        printf '\033[33m  ... Composer sigue activo (%s s); espera la siguiente salida.\033[0m\n' "$((SECONDS - composer_started))"
+        last_heartbeat=$elapsed
+    fi
+done
+wait "$composer_pid" || die 'composer install falló. Revisa las líneas anteriores.'
+printf '\033[32m  Dependencias listas en %s s.\033[0m\n' "$((SECONDS - composer_started))"
 
 step 3 'Preparando configuración'
 if [[ ! -f "$app/.env" ]]; then cp "$app/.env.example" "$app/.env"; printf '  .env creado desde el ejemplo.\n';

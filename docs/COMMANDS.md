@@ -4,6 +4,7 @@ Ejecutar desde `app/`, con el mock levantado y las credenciales configuradas en 
 
 | Comando | Qué hace | Fuente |
 | --- | --- | --- |
+| `php artisan vittles:console` | Abre el [menú interactivo](CONSOLE.md) con acceso local, pedidos, historial, README y diagnóstico ADMIN. | Servicios compartidos con la web |
 | `php artisan vittles:order loc_1001 "Buffalo Wings (12)"` | Autentica, pagina todas las locations, intenta leer cada menú, valida ese producto en `loc_1001`, busca la referencia y crea **una orden de 2** solo si no existe. Imprime estado, ID y total. | Vittles |
 | `php artisan vittles:show ord_5501` | Consulta una orden concreta por ID, en vivo. Si se reinició el mock, un ID anterior puede devolver 404. | Vittles |
 | `php artisan vittles:orders` | Muestra hasta 100 órdenes confirmadas que registró esta integración. | Historial SQLite local |

@@ -23,3 +23,4 @@
 - Los eventos de aplicación van a `app/storage/logs/integration.log` con `correlation_id`, `event` y `source`. No añadir cuerpos HTTP, contraseñas, secretos ni bearer tokens; conservar el vínculo con las trazas de ADMIN.
 - Probar el mismo comando dos veces contra el mismo proceso del mock y comprobar que la segunda ejecución conserva ID y total sin crear otra orden.
 - El README final de entrega debe ser breve, incluir comando exacto, decisiones, exclusiones deliberadas y declaración de uso de IA.
+- La consola interactiva `vittles:console` es una ampliación: comparte cuentas y servicios con la web, pero el comando evaluable `vittles:order` debe seguir funcionando sin login humano. ADMIN de consola conserva restricciones de entorno local, mock loopback y rol administrador.

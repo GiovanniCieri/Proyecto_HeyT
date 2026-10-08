@@ -22,6 +22,6 @@ En macOS/Linux, iniciar el mock con `python3`. Repetir **el mismo comando** sin 
 
 **Fuera de alcance a propósito:** pagos, stock propio, recuperación de contraseña, email verificado, despliegue y garantía distribuida de *exactly once*. No hacen falta para el flujo solicitado; la última depende de soporte del POS.
 
-**Demo web:** `php artisan serve --host=127.0.0.1 --port=8000`; abrir `/register` para crear la primera cuenta local. La web permite varios productos y cantidades de 1 a 20, pero el comando evaluable conserva un producto y cantidad 2. Incluye pedidos locales, README, [ADMIN](docs/ADMIN_DIAGNOSTICS.md) y [guía de logs](docs/LOGGING.md). [Comandos de consulta](docs/COMMANDS.md).
+**Demos opcionales:** web: `php artisan serve --host=127.0.0.1 --port=8000` y abrir `/register`; terminal: `php artisan vittles:console`. Comparten cuentas y permiten varios productos; el comando evaluable conserva un producto y cantidad 2. Ver [comandos](docs/COMMANDS.md), [consola](docs/CONSOLE.md), [ADMIN](docs/ADMIN_DIAGNOSTICS.md) y [logs](docs/LOGGING.md).
 
 **Uso de IA:** se usó Codex para analizar el mock, diseñar, implementar y revisar; las decisiones y el código deben poder explicarse en la entrevista.

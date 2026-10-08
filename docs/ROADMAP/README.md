@@ -17,6 +17,7 @@ El archivo docs/ENUNCIADO.md define la entrega evaluable. Los roadmaps separan e
 | 11 | [MULTI_ITEM_WEB.md](MULTI_ITEM_WEB.md) | Implementado para demo local | No: varios productos en un pedido web |
 | 12 | [ORDER_QUERY_CLI.md](ORDER_QUERY_CLI.md) | Implementado para demo local | No: consultas adicionales por comando |
 | 13 | [RESULT_FLOW.md](RESULT_FLOW.md) | Implementado para demo local | No: comprobante y detalle persistente |
+| 14 | [INTERACTIVE_CONSOLE.md](INTERACTIVE_CONSOLE.md) | Implementado para demo local | No: menú interactivo en terminal |
 
 La demo WEB_UI y USER_AUTH fueron pedidos expresamente y reutilizan el flujo de integración. Siguen siendo ampliaciones: el enunciado solo pide autenticación con Vittles, no cuentas de personas. Otros roadmaps futuros, solo si surge la necesidad: despliegue, observabilidad de producción y conexión a un POS real.
 

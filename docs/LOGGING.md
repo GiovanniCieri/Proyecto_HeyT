@@ -24,6 +24,7 @@ Para una ejecución por Artisan no hay respuesta web: buscar el `correlation_id`
 | `order.history.saved` / `order.history.failed` | `ConfirmedOrderStore::record` | Proyección local de un pedido confirmado; el fallo no cambia la respuesta del POS |
 | `vittles.http.attempt` | `VittlesClient::authenticate` o `VittlesClient::send` | Cada intento real al mock, incluidos 429, 500 y fallos de conexión |
 | `admin.probe.started` / `admin.probe.failed` | `AdminController::probe` | Prueba guiada desde ADMIN |
+| `console.login.succeeded` / `console.action.started` | `VittlesConsole::login` / `VittlesConsole::handle` | Acceso y navegación del menú de terminal |
 
 El log de aplicación **no guarda cuerpos HTTP**, contraseñas, secretos ni bearer tokens. Solo acepta un conjunto definido de campos diagnósticos. Las trazas del POS conservan cuerpos JSON con redacción de campos sensibles conocidos; son una herramienta del mock local, no una política de almacenamiento para producción.
 

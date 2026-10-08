@@ -2,6 +2,8 @@
 
 Levantar el mock y Laravel como indica el README principal. Registrar la primera cuenta local, iniciar sesión y abrir `http://127.0.0.1:8000/admin` desde la misma máquina. La ruta responde 404 fuera de `APP_ENV=local`, si `VITTLES_BASE_URL` no apunta a localhost o si el visitante no llega desde loopback; exige además la cuenta administradora, o responde 403.
 
+La misma cuenta puede abrir `php artisan vittles:console` y elegir **ADMIN · Diagnóstico**. Ese menú comparte el cliente Vittles y las trazas redactadas con la web; solo aparece con entorno local y URL del mock en loopback.
+
 ## Recorrido sugerido
 
 1. Probar autenticación y revisar que `expires` sea 90 y que el token aparezca redactado.

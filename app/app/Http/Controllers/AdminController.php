@@ -109,5 +109,6 @@ class AdminController extends Controller
         abort_unless(app()->environment('local')
             && in_array($host, ['127.0.0.1', 'localhost'], true)
             && in_array(request()->ip(), ['127.0.0.1', '::1'], true), 404);
+        abort_unless(request()->user()?->is_admin, 403);
     }
 }

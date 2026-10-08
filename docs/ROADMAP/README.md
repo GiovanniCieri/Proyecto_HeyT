@@ -9,9 +9,9 @@ El archivo docs/ENUNCIADO.md define la entrega evaluable. Los roadmaps separan e
 | 3 | [ORDER_FLOW.md](ORDER_FLOW.md) | Implementado | Sí: una orden, idempotencia y resumen |
 | 4 | [TESTING_DELIVERY.md](TESTING_DELIVERY.md) | Entrega local armada | Sí: pruebas y entregables |
 | 5 | [WEB_UI.md](WEB_UI.md) | Demo implementada | No: páginas adicionales |
-| 6 | [USER_AUTH.md](USER_AUTH.md) | Diferido | No: cuentas, login y registro |
+| 6 | [USER_AUTH.md](USER_AUTH.md) | Implementado para demo local | No: cuentas, login y registro |
 | 7 | [ADMIN_DIAGNOSTICS.md](ADMIN_DIAGNOSTICS.md) | Implementado para mock local | No: diagnóstico web solicitado |
 
-La demo WEB_UI fue pedida expresamente y reutiliza el flujo de integración. USER_AUTH sigue diferido porque el enunciado solo pide autenticación con Vittles. Otros roadmaps futuros, solo si surge la necesidad: despliegue, observabilidad de producción y conexión a un POS real.
+La demo WEB_UI y USER_AUTH fueron pedidos expresamente y reutilizan el flujo de integración. Siguen siendo ampliaciones: el enunciado solo pide autenticación con Vittles, no cuentas de personas. Otros roadmaps futuros, solo si surge la necesidad: despliegue, observabilidad de producción y conexión a un POS real.
 
-Las decisiones y resultados de cada pasada se registran en docs/CHANGES con fecha e identificador. Las discrepancias técnicas de Vittles se documentan en FIX_API_DOCS.md; ese archivo no sustituye a los roadmaps.
+Las decisiones y resultados de cada pasada se registran en el [historial ordenado](../CHANGES/README.md) con fecha, secuencia e identificador. Las discrepancias técnicas de Vittles se documentan en FIX_API_DOCS.md; ese archivo no sustituye a los roadmaps.

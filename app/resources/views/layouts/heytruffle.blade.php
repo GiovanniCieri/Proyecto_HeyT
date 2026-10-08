@@ -13,13 +13,21 @@
 <body>
     <header class="site-header">
         <div class="header-inner">
-            <a class="wordmark" href="{{ route('vittles.order') }}" aria-label="Inicio de la demo">heytruffle<span>*</span></a>
+            <a class="wordmark" href="{{ auth()->check() ? route('vittles.order') : route('login') }}" aria-label="Inicio de la demo">heytruffle<span>*</span></a>
             <nav aria-label="Navegación principal">
-                <a @class(['active' => request()->routeIs('vittles.order')]) href="{{ route('vittles.order') }}">Nueva orden</a>
-                <a @class(['active' => request()->routeIs('vittles.locations')]) href="{{ route('vittles.locations') }}">Sedes y menús</a>
-                <a @class(['active' => request()->routeIs('vittles.result')]) href="{{ route('vittles.result') }}">Resultado</a>
-                @if (app()->environment('local') && in_array(parse_url((string) config('vittles.base_url'), PHP_URL_HOST), ['127.0.0.1', 'localhost'], true) && in_array(request()->ip(), ['127.0.0.1', '::1'], true))
-                    <a @class(['active' => request()->routeIs('admin.*')]) href="{{ route('admin.index') }}">ADMIN</a>
+                @auth
+                    <a @class(['active' => request()->routeIs('vittles.order')]) href="{{ route('vittles.order') }}">Nueva orden</a>
+                    <a @class(['active' => request()->routeIs('vittles.locations')]) href="{{ route('vittles.locations') }}">Sedes y menús</a>
+                    <a @class(['active' => request()->routeIs('vittles.result')]) href="{{ route('vittles.result') }}">Resultado</a>
+                    @if (auth()->user()->is_admin && app()->environment('local') && in_array(parse_url((string) config('vittles.base_url'), PHP_URL_HOST), ['127.0.0.1', 'localhost'], true) && in_array(request()->ip(), ['127.0.0.1', '::1'], true))
+                        <a @class(['active' => request()->routeIs('admin.*')]) href="{{ route('admin.index') }}">ADMIN</a>
+                    @endif
+                    <form method="post" action="{{ route('logout') }}" class="logout-form">@csrf<button type="submit">Salir</button></form>
+                @else
+                    <a @class(['active' => request()->routeIs('login')]) href="{{ route('login') }}">Ingresar</a>
+                    @if (app()->environment('local') && in_array(request()->ip(), ['127.0.0.1', '::1'], true))
+                        <a @class(['active' => request()->routeIs('register')]) href="{{ route('register') }}">Crear cuenta</a>
+                    @endif
                 @endif
             </nav>
         </div>

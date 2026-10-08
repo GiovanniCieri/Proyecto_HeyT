@@ -16,7 +16,7 @@
 
 ## Implementación futura
 
-- El usuario eligió Laravel 12 + Blade para esta entrega. Mantener la integración reutilizable entre comando Artisan y demo web, sin agregar Angular ni login de usuarios.
+- El usuario eligió Laravel 12 + Blade y luego pidió login/registro web. Mantener la integración reutilizable entre comando Artisan y demo web, sin agregar Angular; el acceso web no debe ser requisito del comando CLI.
 - No exponer client_secret ni bearer tokens en logs, capturas, código de ejemplo o interfaz web.
 - No presentar un HTTP 200 como orden creada sin validar el cuerpo. No repetir a ciegas un POST cuyo resultado sea incierto.
 - Mantener ADMIN como diagnóstico del mock local: restringir a loopback, redactar campos sensibles antes de guardar trazas y actualizar FIX_API_DOCS.md solo con discrepancias técnicas verificadas.

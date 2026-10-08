@@ -1,6 +1,6 @@
 # Uso de ADMIN
 
-Levantar el mock y Laravel como indica el README principal. Abrir `http://127.0.0.1:8000/admin` desde la misma máquina. La ruta responde 404 fuera de `APP_ENV=local`, si `VITTLES_BASE_URL` no apunta a localhost o si el visitante no llega desde loopback.
+Levantar el mock y Laravel como indica el README principal. Registrar la primera cuenta local, iniciar sesión y abrir `http://127.0.0.1:8000/admin` desde la misma máquina. La ruta responde 404 fuera de `APP_ENV=local`, si `VITTLES_BASE_URL` no apunta a localhost o si el visitante no llega desde loopback; exige además la cuenta administradora, o responde 403.
 
 ## Recorrido sugerido
 

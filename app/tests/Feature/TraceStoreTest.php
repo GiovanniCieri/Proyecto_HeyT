@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use App\Services\Vittles\TraceStore;
 use GuzzleHttp\Psr7\Response as PsrResponse;
 use Illuminate\Http\Client\Response;
@@ -31,6 +32,6 @@ class TraceStoreTest extends TestCase
 
     public function test_admin_is_unavailable_outside_local_environment(): void
     {
-        $this->get('/admin')->assertNotFound();
+        $this->actingAs(new User(['is_admin' => true]))->get('/admin')->assertNotFound();
     }
 }

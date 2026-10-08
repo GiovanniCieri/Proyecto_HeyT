@@ -29,6 +29,8 @@ class VittlesConsole extends Command
 
     private ?array $catalogCache = null;
 
+    private bool $fullScreen = false;
+
     public function handle(
         CatalogService $catalog,
         OrderService $orders,
@@ -43,13 +45,36 @@ class VittlesConsole extends Command
             return self::FAILURE;
         }
 
+        $this->fullScreen = defined('STDOUT') && function_exists('stream_isatty') && stream_isatty(STDOUT);
+        if ($this->fullScreen) {
+            fwrite(STDOUT, "\033[?1049h");
+        }
+
+        try {
+            return $this->runMenu($catalog, $orders, $history, $client, $traces, $diagnostics);
+        } finally {
+            if ($this->fullScreen) {
+                fwrite(STDOUT, "\033[?1049l");
+            }
+        }
+    }
+
+    private function runMenu(
+        CatalogService $catalog,
+        OrderService $orders,
+        ConfirmedOrderStore $history,
+        VittlesClient $client,
+        TraceStore $traces,
+        DiagnosticLog $diagnostics,
+    ): int {
         while (true) {
-            $this->banner();
+            $this->screen('Inicio');
             if ($this->user === null) {
                 $option = $this->choice('Acceso', ['Ingresar', 'Registrarse', 'README', 'Ver comando del ejercicio', 'Salir'], 0);
                 if ($option === 'Salir') {
                     return self::SUCCESS;
                 }
+                $this->screen($option);
                 try {
                     if ($option === 'Ingresar') {
                         $this->login($diagnostics);
@@ -63,6 +88,7 @@ class VittlesConsole extends Command
                 } catch (QueryException) {
                     $this->error('No se pudo acceder a las cuentas locales. Ejecutá php artisan migrate.');
                 }
+                $this->pause();
 
                 continue;
             }
@@ -85,6 +111,7 @@ class VittlesConsole extends Command
                 continue;
             }
 
+            $this->screen($option);
             try {
                 $diagnostics->event('info', 'console.action.started', __METHOD__, ['action' => $option, 'user_id' => $this->user->id]);
                 match ($option) {
@@ -102,12 +129,38 @@ class VittlesConsole extends Command
                 $this->error($e->getMessage());
                 $diagnostics->event('warning', 'console.action.failed', __METHOD__, ['error_type' => $e::class]);
             }
+            if ($option !== 'ADMIN · Diagnóstico') {
+                $this->pause();
+            }
+        }
+    }
+
+    private function screen(string $title): void
+    {
+        if ($this->fullScreen) {
+            fwrite(STDOUT, "\033[2J\033[H");
+        }
+        $this->banner();
+        if ($this->user === null) {
+            $this->line('<fg=yellow>ACCESO</>  Ingresar  ·  Registrarse  ·  README  ·  Comando  ·  Salir');
+        } else {
+            $this->line('<fg=yellow>MENÚ</>  Nueva orden  ·  Sedes y menús  ·  Pedidos  ·  Ver pedido');
+            $this->line('      README  ·  Comando'.($this->adminAllowed() ? '  ·  ADMIN' : '').'  ·  Cerrar sesión  ·  Salir');
+        }
+        $this->line('<fg=gray>'.str_repeat('─', 49).'</>');
+        $this->line('<fg=gray>Inicio  /  '.e($title).'</>');
+        $this->newLine();
+    }
+
+    private function pause(): void
+    {
+        if ($this->fullScreen) {
+            $this->ask('Presioná Enter para volver al menú', '');
         }
     }
 
     private function banner(): void
     {
-        $this->newLine();
         $this->line('<fg=yellow>╔══════════════════════════════════════════════╗</>');
         $this->line('<fg=yellow>║</>   <fg=white;options=bold>heytruffle*</>  <fg=yellow>VITTLES POS · CONSOLA</>       <fg=yellow>║</>');
         $this->line('<fg=yellow>╚══════════════════════════════════════════════╝</>');
@@ -210,6 +263,7 @@ class VittlesConsole extends Command
         }
         $id = strtok($selected, ' ');
         $menu = $data['menus'][$id] ?? null;
+        $this->screen('Sedes y menús / '.$id);
         if (($menu['status'] ?? null) !== 'loaded') {
             $this->warn($menu['message'] ?? 'Este menú no está disponible.');
 
@@ -239,6 +293,10 @@ class VittlesConsole extends Command
         $items = array_values(array_filter($data['menus'][$location['id']]['items'], fn (array $item) => $item['available']));
         $lines = [];
         while (true) {
+            $this->screen('Nueva orden / '.$location['name']);
+            if ($lines !== []) {
+                $this->line('Seleccionados: '.implode(', ', array_map(fn (array $line) => $line['name'].' × '.$line['quantity'], $lines)));
+            }
             $this->section('Productos · '.$location['name']);
             $this->table(['ID', 'Producto', 'Precio'], array_map(fn (array $item) => [$item['id'], $item['name'], '$'.$item['price']], $items));
             $options = array_map(fn (array $item) => $item['id'].' · '.$item['name'], $items);
@@ -275,6 +333,7 @@ class VittlesConsole extends Command
 
             return;
         }
+        $this->screen('Nueva orden / Confirmación');
         $this->table(['Producto', 'Cantidad', 'Subtotal estimado'], array_map(fn (array $line) => [
             $line['name'], $line['quantity'], '$'.number_format((float) $line['price'] * $line['quantity'], 2, '.', ''),
         ], array_values($lines)));
@@ -293,6 +352,7 @@ class VittlesConsole extends Command
         $result = $orders->placeMany($location['id'], array_map(fn (array $line) => [
             'item_id' => $line['item_id'], 'quantity' => $line['quantity'],
         ], array_values($lines)), $requestKey);
+        $this->screen('Nueva orden / Resultado');
         $this->receipt($result);
     }
 
@@ -325,25 +385,40 @@ class VittlesConsole extends Command
         }
         $locationId = $selection === 'Todas las sedes' ? null : strtok($selection, ' ');
         $orders = $history->recent($locationId);
-        $this->section('Pedidos confirmados · historial local');
-        $this->line('No es una lista completa de Vittles; muestra hasta 100 confirmaciones de esta integración.');
         if ($orders === []) {
             $this->warn('No hay pedidos para este filtro.');
 
             return;
         }
-        $this->table(['ID', 'Location', 'Productos', 'Unidades', 'Total'], array_map(fn (object $order) => [
-            $order->order_id, $order->location_id,
-            count(json_decode($order->items_json ?? '', true) ?: []) ?: 1,
-            $order->quantity, '$'.number_format((float) $order->total, 2, '.', ''),
-        ], $orders));
-        $labels = array_map(fn (object $order) => $order->order_id.' · '.$order->client_ref, $orders);
-        $labels[] = 'Volver';
-        $selection = $this->choice('Ver detalle local', $labels, count($labels) - 1);
-        if ($selection === 'Volver') {
-            return;
-        }
-        $order = $orders[array_search($selection, $labels, true)];
+        $page = 0;
+        $pageSize = 6;
+        do {
+            $pageCount = (int) ceil(count($orders) / $pageSize);
+            $visible = array_slice($orders, $page * $pageSize, $pageSize);
+            $this->screen('Pedidos confirmados / Página '.($page + 1).' de '.$pageCount);
+            $this->line('Historial local; hasta 100 confirmaciones de esta integración.');
+            $this->table(['#', 'ID', 'Location', 'Productos', 'Unidades', 'Total'], array_map(fn (int $index, object $order) => [
+                $index + 1, $order->order_id, $order->location_id,
+                count(json_decode($order->items_json ?? '', true) ?: []) ?: 1,
+                $order->quantity, '$'.number_format((float) $order->total, 2, '.', ''),
+            ], array_keys($visible), $visible));
+            $this->line('Filas 1–'.count($visible).' · S siguiente · A anterior · Enter volver');
+            $selection = mb_strtolower(trim((string) $this->ask('Ver detalle local', '')));
+            if ($selection === 'a' && $page > 0) {
+                $page--;
+            } elseif ($selection === 's' && $page < $pageCount - 1) {
+                $page++;
+            } elseif ($selection === '') {
+                return;
+            } elseif (ctype_digit($selection) && (int) $selection >= 1 && (int) $selection <= count($visible)) {
+                $order = $visible[(int) $selection - 1];
+                break;
+            } else {
+                $this->warn('Elegí una fila o una página disponible.');
+                $this->pause();
+            }
+        } while (true);
+        $this->screen('Pedidos confirmados / '.$order->order_id);
         $this->section('Pedido '.$order->order_id);
         $this->line('Location: '.$order->location_name.' · '.$order->location_id);
         foreach (json_decode($order->items_json ?? '', true) ?: [['name' => $order->item_name, 'quantity' => $order->quantity]] as $line) {
@@ -398,6 +473,7 @@ class VittlesConsole extends Command
             return;
         }
         while (true) {
+            $this->screen('ADMIN / Diagnóstico');
             $this->section('ADMIN · diagnóstico del mock local');
             $option = $this->choice('Laboratorio de API', [
                 'Ver trazas', 'Probar autenticación', 'Consultar página de locations', 'Recorrer catálogo completo',
@@ -407,6 +483,7 @@ class VittlesConsole extends Command
             if ($option === 'Volver') {
                 return;
             }
+            $this->screen('ADMIN / '.$option);
             try {
                 $result = match ($option) {
                     'Ver trazas' => $this->traces($traces),
@@ -425,11 +502,13 @@ class VittlesConsole extends Command
                     default => null,
                 };
                 if ($result !== null) {
+                    $this->screen('ADMIN / Resultado · '.$option);
                     $this->line(json_encode($this->safeProbeResult($result), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
                 }
             } catch (VittlesException|InvalidArgumentException $e) {
                 $this->error($e->getMessage());
             }
+            $this->pause();
         }
     }
 
@@ -454,18 +533,35 @@ class VittlesConsole extends Command
             && ($filter !== 'POST' || $entry['method'] === 'POST')
             && ($filter !== 'Errores' || ($entry['transport_error'] ?? null) !== null || ($entry['status'] ?? 0) >= 400 || ($entry['response_body']['status'] ?? null) === 'REJECTED')
         ));
-        $entries = array_slice($entries, 0, 20);
         if ($entries === []) {
             $this->warn('No hay trazas para ese filtro.');
 
             return null;
         }
-        $this->table(['#', 'HTTP', 'Ruta', 'Estado', 'ms'], array_map(fn (int $n, array $entry) => [
-            $n + 1, $entry['method'], $entry['path'], $entry['status'] ?? 'sin respuesta', $entry['duration_ms'],
-        ], array_keys($entries), $entries));
-        $number = (int) $this->ask('Número para ver request/response (0 = volver)', '0');
-
-        return $number >= 1 && $number <= count($entries) ? $entries[$number - 1] : null;
+        $page = 0;
+        $pageSize = 6;
+        while (true) {
+            $pageCount = (int) ceil(count($entries) / $pageSize);
+            $visible = array_slice($entries, $page * $pageSize, $pageSize);
+            $this->screen('ADMIN / Trazas · página '.($page + 1).' de '.$pageCount);
+            $this->table(['#', 'HTTP', 'Ruta', 'Estado', 'ms'], array_map(fn (int $n, array $entry) => [
+                $n + 1, $entry['method'], $entry['path'], $entry['status'] ?? 'sin respuesta', $entry['duration_ms'],
+            ], array_keys($visible), $visible));
+            $this->line('Filas 1–'.count($visible).' · S siguiente · A anterior · Enter volver');
+            $selected = mb_strtolower(trim((string) $this->ask('Ver request/response', '')));
+            if ($selected === 'a' && $page > 0) {
+                $page--;
+            } elseif ($selected === 's' && $page < $pageCount - 1) {
+                $page++;
+            } elseif ($selected === '') {
+                return null;
+            } elseif (ctype_digit($selected) && (int) $selected >= 1 && (int) $selected <= count($visible)) {
+                return $visible[(int) $selected - 1];
+            } else {
+                $this->warn('Elegí una fila o una página disponible.');
+                $this->pause();
+            }
+        }
     }
 
     private function safeProbeResult(array $result): array

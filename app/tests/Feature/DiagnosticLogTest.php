@@ -12,6 +12,10 @@ use Tests\TestCase;
 
 class DiagnosticLogTest extends TestCase
 {
+    /**
+     * Verifica que la respuesta web muestre un ID buscable en integration-testing.log.
+     * Permite ubicar el método que atendió un fallo sin inspeccionar el navegador del POS.
+     */
     public function test_web_response_id_is_searchable_in_the_application_log(): void
     {
         $response = $this->get('/login');
@@ -24,6 +28,10 @@ class DiagnosticLogTest extends TestCase
         $this->assertStringContainsString('TraceWebRequest::handle', $log);
     }
 
+    /**
+     * Simula una request web que consulta Vittles y exige el mismo ID en respuesta,
+     * traza HTTP y log; también comprueba que el bearer nunca llegue al log.
+     */
     public function test_one_id_links_the_web_response_provider_trace_and_log(): void
     {
         config()->set('vittles.base_url', 'http://vittles.test');
@@ -52,6 +60,10 @@ class DiagnosticLogTest extends TestCase
         $this->assertStringNotContainsString('private-token', $log);
     }
 
+    /**
+     * Envía campos permitidos y secretos al logger; solo el método debe persistir.
+     * Detectaría una ampliación accidental del contexto que filtrase credenciales.
+     */
     public function test_diagnostic_log_only_persists_allowlisted_fields(): void
     {
         app(DiagnosticLog::class)->event('warning', 'diagnostics.redaction.test', __METHOD__, [
@@ -67,6 +79,10 @@ class DiagnosticLogTest extends TestCase
         $this->assertStringNotContainsString('private-password-forbidden', $lastLine);
     }
 
+    /**
+     * Simula HTTP 429 en /oauth/token y exige un mensaje específico de rate limit.
+     * El límite también afecta la autenticación, no solo los GET del POS.
+     */
     public function test_rate_limit_during_authentication_is_reported_accurately(): void
     {
         config()->set('vittles.base_url', 'http://vittles.test');

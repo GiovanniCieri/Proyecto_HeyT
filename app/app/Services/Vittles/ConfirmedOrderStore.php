@@ -8,8 +8,13 @@ use Throwable;
 
 class ConfirmedOrderStore
 {
+    /** Registra eventos del historial sin mezclar su fallo con el resultado del POS. */
     public function __construct(private readonly DiagnosticLog $diagnostics) {}
 
+    /**
+     * Guarda o actualiza una orden ya confirmada, usando client_ref como clave local.
+     * Es un historial para la demo; si SQLite falla, la confirmación remota sigue vigente.
+     */
     public function record(array $result): void
     {
         try {
@@ -45,6 +50,7 @@ class ConfirmedOrderStore
         }
     }
 
+    /** Lista solo sedes con confirmaciones locales para construir el filtro de pedidos. */
     public function locations(): array
     {
         return DB::table('confirmed_orders')
@@ -55,6 +61,7 @@ class ConfirmedOrderStore
             ->all();
     }
 
+    /** Devuelve las últimas 100 confirmaciones locales, opcionalmente de una sede. */
     public function recent(?string $locationId): array
     {
         return DB::table('confirmed_orders')
@@ -65,6 +72,7 @@ class ConfirmedOrderStore
             ->all();
     }
 
+    /** Busca el comprobante local por la referencia mostrada tras crear la orden. */
     public function findByReference(string $clientRef): ?object
     {
         return DB::table('confirmed_orders')->where('client_ref', $clientRef)->first();

@@ -17,8 +17,10 @@ use InvalidArgumentException;
 
 class AdminController extends Controller
 {
+    /** Inyecta el logger para relacionar cada prueba manual con su método de origen. */
     public function __construct(private readonly DiagnosticLog $diagnostics) {}
 
+    /** Filtra las trazas redactadas por estado o ID para investigar una llamada concreta al mock. */
     public function index(Request $request, TraceStore $traces): View
     {
         $this->onlyLocalMock();
@@ -48,6 +50,7 @@ class AdminController extends Controller
         ]);
     }
 
+    /** Ejecuta una prueba explícita del endpoint elegido y devuelve su resultado a la pantalla ADMIN. */
     public function probe(Request $request, VittlesClient $client, CatalogService $catalog, OrderService $orders): RedirectResponse
     {
         $this->onlyLocalMock();
@@ -78,6 +81,7 @@ class AdminController extends Controller
         return redirect()->route('admin.index')->with('admin_probe_result', ['probe' => $kind, 'data' => $result]);
     }
 
+    /** Usa el flujo normal de pedidos para que una prueba ADMIN conserve validación e idempotencia. */
     private function createOrder(Request $request, OrderService $orders): array
     {
         $input = $request->validate([
@@ -97,6 +101,7 @@ class AdminController extends Controller
         ];
     }
 
+    /** Resume el catálogo en el panel: estado por menú sin imprimir todos los productos. */
     private function catalogSummary(array $catalog): array
     {
         return [
@@ -109,6 +114,7 @@ class AdminController extends Controller
         ];
     }
 
+    /** Clasifica como fallo tanto HTTP >= 400 como el 200 con REJECTED observado en Vittles. */
     private function isError(array $entry): bool
     {
         return ($entry['transport_error'] ?? null) !== null
@@ -116,6 +122,7 @@ class AdminController extends Controller
             || ($entry['response_body']['status'] ?? null) === 'REJECTED';
     }
 
+    /** Restringe el laboratorio a un administrador local conectado a un mock loopback. */
     private function onlyLocalMock(): void
     {
         $host = parse_url((string) config('vittles.base_url'), PHP_URL_HOST);

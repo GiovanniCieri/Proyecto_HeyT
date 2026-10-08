@@ -14,6 +14,10 @@ class OrderPagesTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Crea dos confirmaciones locales y repite una referencia para probar el upsert.
+     * El filtro muestra solo la sede pedida y no hace ninguna llamada a Vittles.
+     */
     public function test_confirmed_orders_are_grouped_and_filterable_by_location_without_calling_vittles(): void
     {
         Http::preventStrayRequests();
@@ -44,6 +48,10 @@ class OrderPagesTest extends TestCase
         Http::assertNothingSent();
     }
 
+    /**
+     * Asegura que la página README diferencie el comando obligatorio de la demo web
+     * y declare las exclusiones deliberadas requeridas por el enunciado.
+     */
     public function test_readme_explains_fixed_cli_quantity_and_deliberate_exclusions(): void
     {
         $this->actingAs($this->user())
@@ -53,6 +61,10 @@ class OrderPagesTest extends TestCase
             ->assertSee('FUERA DE ALCANCE A PROPÓSITO');
     }
 
+    /**
+     * Simula el POS y crea una compra web de dos líneas con cantidades distintas.
+     * Comprueba payload, total confirmado, historial, resultado temporal y detalle.
+     */
     public function test_web_sends_two_products_and_records_the_confirmed_total(): void
     {
         config()->set('vittles.base_url', 'http://vittles.test');
@@ -110,6 +122,10 @@ class OrderPagesTest extends TestCase
         $this->get('/orders/'.$saved->client_ref)->assertOk()->assertSee('Loaded Fries');
     }
 
+    /**
+     * Un formulario sin cantidades positivas falla antes de contactar al POS.
+     * Previene aceptar el comportamiento defectuoso del mock, que convierte 0 en 1.
+     */
     public function test_web_rejects_out_of_range_quantity_before_any_pos_request(): void
     {
         Http::preventStrayRequests();
@@ -121,6 +137,10 @@ class OrderPagesTest extends TestCase
         Http::assertNothingSent();
     }
 
+    /**
+     * El comando de historial debe leer SQLite y funcionar aunque Vittles esté caído.
+     * La prohibición de requests salientes detecta consultas remotas accidentales.
+     */
     public function test_orders_command_lists_local_history_without_contacting_pos(): void
     {
         Http::preventStrayRequests();
@@ -138,6 +158,10 @@ class OrderPagesTest extends TestCase
         Http::assertNothingSent();
     }
 
+    /**
+     * El comando de consulta por ID sí debe leer Vittles en vivo y mostrar ID y total.
+     * Distingue esta consulta del historial local, que no enumera todo el POS.
+     */
     public function test_show_command_reads_one_order_directly_from_pos(): void
     {
         config()->set('vittles.base_url', 'http://vittles.test');
@@ -161,6 +185,7 @@ class OrderPagesTest extends TestCase
         Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/v1/orders/ord_55'));
     }
 
+    /** Fabrica una cuenta común para probar las páginas protegidas sin repetir el alta. */
     private function user(): User
     {
         return User::create([

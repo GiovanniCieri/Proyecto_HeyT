@@ -17,11 +17,13 @@ class DiagnosticLog
         'user_id',
     ];
 
+    /** Crea un ID para comandos CLI y procesos sin request web. */
     public function __construct()
     {
         $this->runId = bin2hex(random_bytes(8));
     }
 
+    /** Usa el ID de la request web cuando existe; de otro modo, el del proceso. */
     public function correlationId(): string
     {
         $id = app()->bound('request') ? request()->attributes->get('correlation_id') : null;
@@ -29,6 +31,10 @@ class DiagnosticLog
         return is_string($id) && $id !== '' ? $id : $this->runId;
     }
 
+    /**
+     * Registra solo campos permitidos y escalares para poder buscar fallos por método
+     * sin guardar secretos o cuerpos completos; un fallo del log no corta la operación.
+     */
     public function event(string $level, string $event, string $source, array $details = []): void
     {
         try {

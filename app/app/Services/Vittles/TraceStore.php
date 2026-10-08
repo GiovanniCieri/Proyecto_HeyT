@@ -8,8 +8,13 @@ use Throwable;
 
 class TraceStore
 {
+    /** Usa el ID de diagnóstico compartido para relacionar request web, log y llamada POS. */
     public function __construct(private readonly DiagnosticLog $diagnostics) {}
 
+    /**
+     * Guarda un intento HTTP con duración, resultado y origen, redactando antes de persistir.
+     * La observabilidad nunca debe alterar el resultado de una compra si el archivo falla.
+     */
     public function record(
         string $method,
         string $path,
@@ -66,6 +71,7 @@ class TraceStore
         }
     }
 
+    /** Lee las trazas más recientes para ADMIN, ignorando líneas incompletas. */
     public function recent(int $limit = 120): array
     {
         $path = $this->path();
@@ -89,6 +95,7 @@ class TraceStore
         return $entries;
     }
 
+    /** Añade JSONL bajo lock y limita el tamaño del archivo para esta demo local. */
     private function append(array $entry): void
     {
         $path = $this->path();
@@ -118,6 +125,7 @@ class TraceStore
         }
     }
 
+    /** Conserva solo headers útiles para diagnosticar rate limit y correlación. */
     private function selectedHeaders(Response $response): array
     {
         $result = [];
@@ -131,6 +139,7 @@ class TraceStore
         return $result;
     }
 
+    /** Sustituye recursivamente secretos, tokens y datos personales antes de escribir trazas. */
     private function redact(array $data): array
     {
         $result = [];
@@ -145,6 +154,7 @@ class TraceStore
         return $result;
     }
 
+    /** Aísla las trazas de tests de las trazas privadas de la demo. */
     private function path(): string
     {
         return app()->environment('testing')

@@ -20,10 +20,13 @@ Permitir recorrer desde una terminal las mismas funciones de la demo web, con na
 - [x] Ofrecer pruebas de endpoints y trazas redactadas en ADMIN.
 - [x] Registrar acciones con método fuente y ocultar contraseñas, secreto y bearer token.
 - [x] Probar registro, login, roles, pedido multítem y redacción del token.
+- [x] Redibujar encabezado y navegación en cada pantalla interactiva, pausar los resultados y paginar pedidos y trazas.
 
 ## Criterios de aceptación
 
 `php artisan vittles:console` abre un menú en una terminal interactiva. Las cuentas creadas allí funcionan en la web y viceversa. La opción “Ejecutar comando del ejercicio” llama a `vittles:order`, conservando un producto y cantidad 2. `--no-interaction` falla con una instrucción para usar el comando directo. ADMIN no aparece para usuarios comunes ni con un POS remoto.
+
+En una terminal TTY, README y otras opciones aparecen en una pantalla limpia bajo el mismo encabezado; Enter devuelve al menú sin acumular bloques. Los listados largos usan páginas de seis entradas.
 
 ## Límites
 

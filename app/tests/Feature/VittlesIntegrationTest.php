@@ -9,6 +9,10 @@ use Tests\TestCase;
 
 class VittlesIntegrationTest extends TestCase
 {
+    /**
+     * Ejecuta la misma intención dos veces sobre un POS simulado: la segunda debe
+     * recuperar ID y total mediante client_ref y mantener el contador de POST en uno.
+     */
     public function test_second_execution_reuses_the_same_order_without_a_second_post(): void
     {
         $posts = 0;
@@ -29,6 +33,10 @@ class VittlesIntegrationTest extends TestCase
         $this->assertSame('forbidden', $first['catalog']['menus']['loc_1004']['status']);
     }
 
+    /**
+     * Un producto presente pero agotado en esa sede debe detenerse antes del POST.
+     * Protege la validación por location y evita confundir existencia con disponibilidad.
+     */
     public function test_unavailable_product_never_reaches_order_post(): void
     {
         $posts = 0;
@@ -43,6 +51,10 @@ class VittlesIntegrationTest extends TestCase
         }
     }
 
+    /**
+     * El mock puede responder HTTP 200 con status REJECTED; no es una compra exitosa.
+     * Este test fallaría si se decidiese el éxito solo por el status HTTP.
+     */
     public function test_http_200_rejected_is_not_reported_as_created(): void
     {
         $posts = 0;
@@ -56,6 +68,10 @@ class VittlesIntegrationTest extends TestCase
         $this->assertSame(1, $posts);
     }
 
+    /**
+     * Un 201 sin cuerpo válido deja incierto el POST; la búsqueda posterior lo concilia.
+     * Exige RECOVERED sin un segundo POST que pudiera duplicar la compra.
+     */
     public function test_unreadable_post_response_is_reconciled_without_resending(): void
     {
         $posts = 0;
@@ -69,6 +85,10 @@ class VittlesIntegrationTest extends TestCase
         $this->assertSame(1, $posts);
     }
 
+    /**
+     * Cambiar de 2 a 3 unidades crea otra intención y otra referencia.
+     * A la vez deja comprobado que la entrada usada por el ejercicio mantiene 2.
+     */
     public function test_quantity_changes_the_purchase_reference_while_cli_default_remains_two(): void
     {
         $posts = 0;
@@ -85,6 +105,10 @@ class VittlesIntegrationTest extends TestCase
         $this->assertSame(2, $posts);
     }
 
+    /**
+     * Una selección de varios productos genera la misma referencia aunque cambie
+     * el orden de selección; la segunda ejecución recupera la única orden creada.
+     */
     public function test_multi_product_order_is_idempotent_even_when_selection_order_changes(): void
     {
         $posts = 0;
@@ -112,6 +136,10 @@ class VittlesIntegrationTest extends TestCase
             && count($request->data()['items']) === 2);
     }
 
+    /**
+     * Una línea válida no debe provocar una orden parcial si otra línea es inválida.
+     * La selección entera se verifica contra el menú antes de cualquier POST.
+     */
     public function test_invalid_second_product_prevents_the_entire_order_post(): void
     {
         $posts = 0;
@@ -129,6 +157,10 @@ class VittlesIntegrationTest extends TestCase
         }
     }
 
+    /**
+     * Reproduce paginación, menú inactivo, búsqueda por referencia y creación del mock.
+     * Los contadores permiten afirmar si un escenario llegó realmente a enviar POST.
+     */
     private function fakeVittles(int &$posts, ?string &$reference, bool $reject = false, bool $malformedPost = false): void
     {
         config()->set('vittles.base_url', 'http://vittles.test');

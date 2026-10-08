@@ -9,6 +9,7 @@ use InvalidArgumentException;
 
 class OrderService
 {
+    /** Reúne cliente, catálogo, historial y diagnóstico en un flujo reutilizable por web y CLI. */
     public function __construct(
         private readonly VittlesClient $client,
         private readonly CatalogService $catalog,
@@ -16,16 +17,25 @@ class OrderService
         private readonly ConfirmedOrderStore $confirmedOrders,
     ) {}
 
+    /** Pedido evaluable: nombre exacto y, por defecto, dos unidades en una sola sede. */
     public function place(string $locationId, string $itemName, string $requestKey = 'demo', int $quantity = 2): array
     {
         return $this->placeSelection($locationId, [['name' => $itemName, 'quantity' => $quantity]], $requestKey);
     }
 
+    /** Extensión de la demo: varias líneas pasan por las mismas validaciones e idempotencia. */
     public function placeMany(string $locationId, array $lines, string $requestKey = 'demo'): array
     {
         return $this->placeSelection($locationId, $lines, $requestKey);
     }
 
+    /**
+     * Valida sede, menú, productos y cantidades antes del POST; luego genera un
+     * client_ref estable para la intención de compra. Busca primero la referencia
+     * porque el mock almacena client_ref pero NO impide POST duplicados.
+     * El lock local reduce carreras en esta instalación; no ofrece exactly once
+     * entre máquinas. Solo registra pedidos que Vittles confirmó.
+     */
     private function placeSelection(string $locationId, array $lines, string $requestKey): array
     {
         $this->diagnostics->event('info', 'order.place.started', __METHOD__, ['items_count' => count($lines)]);
@@ -80,6 +90,7 @@ class OrderService
             $resolved[] = ['item' => $item, 'quantity' => $quantity];
         }
 
+        // La misma compra multítem debe dar la misma referencia aunque cambie el orden de selección.
         $canonical = array_map(fn (array $line) => [$line['item']['id'], $line['quantity']], $resolved);
         usort($canonical, fn (array $a, array $b) => strcmp($a[0], $b[0]));
         $referenceParts = count($resolved) === 1
@@ -93,8 +104,10 @@ class OrderService
             'client_ref' => $ref, 'catalog' => $catalog,
         ];
 
+        // El lock coordina procesos de esta instalación, pero la API no ofrece una operación atómica global.
         try {
             $result = Cache::store('file')->lock('vittles-order-'.$ref, 20)->block(8, function () use ($ref, $locationId, $resolved, $context) {
+                // El mock NO deduplica client_ref: encontrar una orden existente evita otro POST.
                 $found = $this->findByReference($ref);
                 if (count($found) > 1) {
                     $this->diagnostics->event('warning', 'order.lookup.ambiguous', __METHOD__, ['client_ref' => $ref, 'items_count' => count($found)]);
@@ -105,6 +118,7 @@ class OrderService
                     return $context + ['status' => 'EXISTING', 'order' => $found[0]];
                 }
 
+                // Después de este punto, un timeout no prueba que la orden haya fallado.
                 try {
                     $this->diagnostics->event('info', 'order.post.started', __METHOD__, ['location_id' => $locationId, 'client_ref' => $ref]);
                     $order = $this->client->createOrder([
@@ -118,6 +132,7 @@ class OrderService
                     return $this->reconcileUnknown($context, $ref, $e->getMessage());
                 }
 
+                // Vittles puede devolver HTTP 200 y aun así rechazar la operación en el cuerpo.
                 if (($order['status'] ?? null) === 'REJECTED') {
                     $this->diagnostics->event('warning', 'order.post.rejected', __METHOD__, ['client_ref' => $ref, 'reason_code' => 'provider_rejected']);
 
@@ -154,6 +169,11 @@ class OrderService
         }
     }
 
+    /**
+     * Tras un POST incierto, consulta por client_ref sin volver a enviarlo.
+     * Si la búsqueda tampoco confirma una única orden, informa UNKNOWN:
+     * asumir fracaso y repetir podría crear un duplicado.
+     */
     private function reconcileUnknown(array $context, string $ref, string $message): array
     {
         $this->diagnostics->event('warning', 'order.reconcile.started', __METHOD__, ['client_ref' => $ref]);
@@ -173,6 +193,7 @@ class OrderService
         return $context + ['status' => 'UNKNOWN', 'message' => $message.' No se enviará otro POST automáticamente.'];
     }
 
+    /** Usa el GET no documentado por client_ref y exige una lista válida antes de decidir si crear. */
     private function findByReference(string $ref): array
     {
         $response = $this->client->get('/v1/orders', ['client_ref' => $ref]);
@@ -186,6 +207,10 @@ class OrderService
         return array_map(fn (mixed $order) => $this->validateOrder($order, $ref), $response['data']);
     }
 
+    /**
+     * Comprueba ID, referencia, estado ACCEPTED y total de una orden del POS.
+     * HTTP 200 por sí solo no demuestra creación: el mock también devuelve REJECTED.
+     */
     private function validateOrder(mixed $order, string $ref): array
     {
         if (! is_array($order) || ! is_string($order['id'] ?? null)

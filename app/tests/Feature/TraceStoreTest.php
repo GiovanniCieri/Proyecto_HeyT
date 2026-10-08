@@ -10,6 +10,10 @@ use Tests\TestCase;
 
 class TraceStoreTest extends TestCase
 {
+    /**
+     * Guarda una traza con secreto, token y teléfono simulados y confirma su redacción.
+     * Conserva trace_id y origen para que la investigación siga siendo posible.
+     */
     public function test_sensitive_values_are_redacted_before_a_trace_is_saved(): void
     {
         request()->attributes->set('correlation_id', 'abcdef0123456789');
@@ -33,6 +37,10 @@ class TraceStoreTest extends TestCase
         $this->assertSame('App\\Services\\Vittles\\VittlesClient::authenticate', $trace['source']);
     }
 
+    /**
+     * Incluso una cuenta marcada ADMIN recibe 404 fuera del entorno local.
+     * El laboratorio no debe exponerse al cambiar el ambiente de ejecución.
+     */
     public function test_admin_is_unavailable_outside_local_environment(): void
     {
         $this->actingAs(new User(['is_admin' => true]))->get('/admin')->assertNotFound();

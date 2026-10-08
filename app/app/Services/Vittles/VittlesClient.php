@@ -16,21 +16,25 @@ class VittlesClient
 
     private string $operationId;
 
+    /** Asigna un ID a la operación para unir sus intentos HTTP en las trazas. */
     public function __construct(private readonly TraceStore $traces)
     {
         $this->operationId = bin2hex(random_bytes(5));
     }
 
+    /** Punto de entrada para lecturas autenticadas; send aplica reintentos seguros de GET. */
     public function get(string $path, array $query = []): array
     {
         return $this->send('GET', $path, $query);
     }
 
+    /** Añade el header de sede exigido por el mock, omitido en API_DOCS.md. */
     public function createOrder(array $payload, string $locationId): array
     {
         return $this->send('POST', '/v1/orders', $payload, ['X-Vittles-Location' => $locationId]);
     }
 
+    /** Fuerza una autenticación de diagnóstico y devuelve metadatos con el token oculto. */
     public function inspectAuthentication(): array
     {
         $this->token = null;
@@ -44,6 +48,7 @@ class VittlesClient
         ];
     }
 
+    /** Provoca un rechazo controlado para verificar el 200/REJECTED sin crear una orden. */
     public function probeRejectedOrder(): array
     {
         return $this->send('POST', '/v1/orders', [
@@ -53,6 +58,10 @@ class VittlesClient
         ]);
     }
 
+    /**
+     * Obtiene un bearer con las credenciales de entorno. El mock responde expires,
+     * no expires_in; el token se renueva antes de vencer y nunca se registra en claro.
+     */
     private function authenticate(): void
     {
         $id = config('vittles.client_id');
@@ -90,6 +99,11 @@ class VittlesClient
         $this->lastAuthentication = array_diff_key($data, ['access_token' => true]);
     }
 
+    /**
+     * Centraliza headers, tiempos, trazas y manejo de errores HTTP. Reintenta GET
+     * ante fallos transitorios; nunca repite un POST de resultado incierto porque
+     * el proveedor no garantiza idempotencia por client_ref.
+     */
     private function send(string $method, string $path, array $data, array $headers = []): array
     {
         $maxAttempts = $method === 'GET' ? 3 : 1;
@@ -121,6 +135,7 @@ class VittlesClient
             }
             $this->traces->record($method, $path, $method === 'GET' ? $data : [], $method === 'POST' ? $data : [], $headers, $response, $this->elapsed($started), $attempt, operationId: $this->operationId, source: __METHOD__);
 
+            // Un 401 explícito indica que esta request no fue aceptada; renovar el token es seguro.
             if ($response->status() === 401 && ! $refreshed) {
                 $this->token = null;
                 $refreshed = true;
@@ -130,6 +145,7 @@ class VittlesClient
                 continue;
             }
 
+            // Solo las lecturas se repiten; 429 usa el header en milisegundos observado en el mock.
             if ($method === 'GET' && in_array($response->status(), [429, 500, 502, 503, 504], true) && $attempt < $maxAttempts) {
                 $delayMs = $response->status() === 429
                     ? (int) $response->header('Retry-After-Ms', 4000)
@@ -139,6 +155,7 @@ class VittlesClient
                 continue;
             }
 
+            // Ante un POST no confirmado se informa incertidumbre y OrderService concilia por client_ref.
             if ($method === 'POST' && ($response->status() === 429 || $response->status() >= 500)) {
                 throw new UnknownOutcome('Vittles no confirmó el resultado del POST (HTTP '.$response->status().').', $response->status());
             }
@@ -163,6 +180,7 @@ class VittlesClient
         throw new VittlesException('Se agotaron los intentos de lectura de Vittles.');
     }
 
+    /** Exige un objeto JSON para no interpretar arrays o cuerpos inválidos como éxito. */
     private function jsonObject(Response $response): array
     {
         $data = $response->json();
@@ -173,11 +191,13 @@ class VittlesClient
         return $data;
     }
 
+    /** Compone la URL desde configuración para alternar mock y dobles de prueba. */
     private function url(string $path): string
     {
         return rtrim((string) config('vittles.base_url'), '/').$path;
     }
 
+    /** Convierte la duración de un intento a milisegundos para las trazas. */
     private function elapsed(float $started): int
     {
         return (int) round((microtime(true) - $started) * 1000);

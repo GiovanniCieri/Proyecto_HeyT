@@ -6,11 +6,17 @@ use App\Support\DiagnosticLog;
 
 class CatalogService
 {
+    /** Usa el cliente HTTP compartido y un ID diagnóstico para cada lectura del catálogo. */
     public function __construct(
         private readonly VittlesClient $client,
         private readonly DiagnosticLog $diagnostics,
     ) {}
 
+    /**
+     * Reúne todas las páginas de locations y consulta el menú de cada una.
+     * La API real pagina de 2 en 2 y una sede inactiva responde 403: se conserva
+     * ese estado por sede para cumplir la lectura global sin crear allí pedidos.
+     */
     public function load(): array
     {
         $this->diagnostics->event('info', 'catalog.load.started', __METHOD__);
@@ -36,6 +42,7 @@ class CatalogService
                 $locations[] = $location;
             }
 
+            // API_DOCS.md omite la paginación: solo se siguen cursores entregados por Vittles.
             $cursor = $page['next_cursor'] ?? null;
             if ($cursor !== null && (! is_string($cursor) || isset($seen[$cursor]))) {
                 $this->diagnostics->event('error', 'catalog.contract_invalid', __METHOD__, ['reason_code' => 'cursor_invalid']);
@@ -66,6 +73,7 @@ class CatalogService
                 $menus[$id] = ['status' => 'loaded', 'items' => $items];
                 $this->diagnostics->event('info', 'catalog.menu.loaded', __METHOD__, ['location_id' => $id, 'items_count' => count($items)]);
             } catch (VittlesException $e) {
+                // Una sede inactiva da 403 y un menú puede fallar con 500; se informa por sede.
                 $menus[$id] = [
                     'status' => $e->httpStatus === 403 ? 'forbidden' : 'error',
                     'items' => [],
@@ -80,6 +88,11 @@ class CatalogService
         return ['locations' => $locations, 'menus' => $menus];
     }
 
+    /**
+     * Traduce las variantes observadas del mock a un formato único para el resto del sistema.
+     * Acepta precio numérico o string numérico y disponibilidad bool o 0/1;
+     * cualquier otra forma falla explícitamente para no inventar precios o stock.
+     */
     private function normalizeItem(mixed $item, string $locationId): array
     {
         if (! is_array($item) || ! is_string($item['id'] ?? null) || ! is_string($item['name'] ?? null)

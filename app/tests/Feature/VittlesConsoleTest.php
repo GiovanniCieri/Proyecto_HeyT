@@ -13,6 +13,10 @@ class VittlesConsoleTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Un visitante puede leer el comando evaluable y salir sin crear cuenta ni pedido.
+     * Mantiene visible el camino corto del ejercicio dentro de la demo interactiva.
+     */
     public function test_guest_can_preview_the_exact_exercise_command_and_exit(): void
     {
         $this->artisan('vittles:console')
@@ -22,6 +26,10 @@ class VittlesConsoleTest extends TestCase
             ->assertSuccessful();
     }
 
+    /**
+     * El alta de terminal usa la tabla de la web, guarda hash y asigna ADMIN solo
+     * a la primera cuenta local; verifica que el menú refleje ese permiso.
+     */
     public function test_local_registration_creates_a_web_compatible_account_and_exposes_admin(): void
     {
         app()->instance('env', 'local');
@@ -43,6 +51,10 @@ class VittlesConsoleTest extends TestCase
         $this->assertTrue(Hash::check('secret123', $user->password));
     }
 
+    /**
+     * Una cuenta común puede ingresar, pero su menú no incluye diagnóstico.
+     * Impide que la consola eluda el control de rol aplicado en la web.
+     */
     public function test_non_admin_login_cannot_see_diagnostic_menu(): void
     {
         app()->instance('env', 'local');
@@ -58,6 +70,10 @@ class VittlesConsoleTest extends TestCase
             ->assertSuccessful();
     }
 
+    /**
+     * Recorre login, elección de sede, dos productos, cantidades y confirmación.
+     * Comprueba una referencia estable compartida con la web y un solo POST.
+     */
     public function test_interactive_menu_creates_one_multi_product_order(): void
     {
         app()->instance('env', 'local');
@@ -121,6 +137,10 @@ class VittlesConsoleTest extends TestCase
         $this->assertSame(1, $posts);
     }
 
+    /**
+     * Ejecuta la prueba de autenticación ADMIN con una respuesta que contiene token.
+     * La pantalla debe mostrar [REDACTED] sin revelar el bearer de Vittles.
+     */
     public function test_admin_auth_probe_redacts_the_pos_token(): void
     {
         app()->instance('env', 'local');
@@ -146,6 +166,10 @@ class VittlesConsoleTest extends TestCase
             ->assertSuccessful();
     }
 
+    /**
+     * La opción de consola invoca el comando original del ejercicio, no el flujo
+     * multítem: verifica un único producto y cantidad fija de dos unidades.
+     */
     public function test_menu_button_runs_the_original_fixed_quantity_command(): void
     {
         app()->instance('env', 'local');

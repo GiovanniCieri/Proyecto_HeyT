@@ -12,6 +12,10 @@ class AuthFlowTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Comprueba que un visitante no pueda ver la demo ni crear pedidos.
+     * Protege el límite entre las rutas públicas de acceso y las rutas autenticadas.
+     */
     public function test_guest_is_sent_to_login(): void
     {
         $this->get('/')->assertRedirect('/login');
@@ -19,6 +23,10 @@ class AuthFlowTest extends TestCase
         $this->post('/orders', [])->assertRedirect('/login');
     }
 
+    /**
+     * Registra la primera cuenta en modo local y verifica normalización del email,
+     * hash de contraseña, sesión iniciada y acceso ADMIN reservado a esa cuenta.
+     */
     public function test_first_local_registration_reaches_home_and_has_admin_access(): void
     {
         app()->instance('env', 'local');
@@ -39,6 +47,10 @@ class AuthFlowTest extends TestCase
         $this->get('/admin')->assertOk();
     }
 
+    /**
+     * La segunda cuenta debe quedar sin rol ADMIN; también comprueba que logout
+     * invalida la sesión y que las mismas credenciales permiten volver a ingresar.
+     */
     public function test_later_user_cannot_see_admin_and_can_log_out_and_back_in(): void
     {
         app()->instance('env', 'local');
@@ -60,6 +72,10 @@ class AuthFlowTest extends TestCase
         $this->assertAuthenticated();
     }
 
+    /**
+     * Fuera del entorno local, tanto el formulario como el POST de registro dan 404.
+     * Evita convertir el alta de esta demo en una función pública accidental.
+     */
     public function test_registration_is_closed_outside_local_environment(): void
     {
         $this->get('/register')->assertNotFound();

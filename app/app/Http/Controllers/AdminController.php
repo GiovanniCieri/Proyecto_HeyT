@@ -7,6 +7,7 @@ use App\Services\Vittles\OrderService;
 use App\Services\Vittles\TraceStore;
 use App\Services\Vittles\VittlesClient;
 use App\Services\Vittles\VittlesException;
+use App\Support\DiagnosticLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -16,12 +17,18 @@ use InvalidArgumentException;
 
 class AdminController extends Controller
 {
+    public function __construct(private readonly DiagnosticLog $diagnostics) {}
+
     public function index(Request $request, TraceStore $traces): View
     {
         $this->onlyLocalMock();
         $recent = $traces->recent();
         $filter = in_array($request->query('filter'), ['all', 'errors', 'post'], true) ? $request->query('filter') : 'all';
-        $visible = array_values(array_filter($recent, function (array $entry) use ($filter) {
+        $searchId = is_string($request->query('id')) && preg_match('/^[a-f0-9]{16}$/', $request->query('id')) ? $request->query('id') : '';
+        $visible = array_values(array_filter($recent, function (array $entry) use ($filter, $searchId) {
+            if ($searchId !== '' && ($entry['correlation_id'] ?? null) !== $searchId) {
+                return false;
+            }
             if ($filter === 'post') {
                 return $entry['method'] === 'POST';
             }
@@ -35,6 +42,7 @@ class AdminController extends Controller
         return view('admin.index', [
             'traces' => $visible,
             'filter' => $filter,
+            'searchId' => $searchId,
             'count' => count($recent),
             'errorCount' => count(array_filter($recent, fn (array $entry) => $this->isError($entry))),
         ]);
@@ -46,6 +54,7 @@ class AdminController extends Controller
         $kind = Validator::make($request->all(), [
             'probe' => ['required', Rule::in(['auth', 'locations', 'catalog', 'menu', 'order-search', 'order-detail', 'order-rejected', 'order-create'])],
         ])->validate()['probe'];
+        $this->diagnostics->event('info', 'admin.probe.started', __METHOD__, ['probe' => $kind]);
 
         try {
             $result = match ($kind) {
@@ -59,8 +68,12 @@ class AdminController extends Controller
                 'order-create' => $this->createOrder($request, $orders),
             };
         } catch (InvalidArgumentException|VittlesException $e) {
+            $this->diagnostics->event('warning', 'admin.probe.failed', __METHOD__, ['probe' => $kind, 'error_type' => $e::class, 'http_status' => $e instanceof VittlesException ? $e->httpStatus : null]);
+
             return redirect()->route('admin.index')->with('admin_probe_error', $e->getMessage());
         }
+
+        $this->diagnostics->event('info', 'admin.probe.finished', __METHOD__, ['probe' => $kind]);
 
         return redirect()->route('admin.index')->with('admin_probe_result', ['probe' => $kind, 'data' => $result]);
     }

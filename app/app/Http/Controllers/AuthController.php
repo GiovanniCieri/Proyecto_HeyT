@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\DiagnosticLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,8 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly DiagnosticLog $diagnostics) {}
+
     public function showLogin(): View
     {
         return view('auth.login');
@@ -25,10 +28,13 @@ class AuthController extends Controller
         ]);
 
         if (! Auth::attempt($credentials)) {
+            $this->diagnostics->event('warning', 'auth.login.failed', __METHOD__, ['reason_code' => 'invalid_credentials']);
+
             return back()->withErrors(['email' => 'Las credenciales no coinciden.'])->onlyInput('email');
         }
 
         $request->session()->regenerate();
+        $this->diagnostics->event('info', 'auth.login.succeeded', __METHOD__, ['user_id' => Auth::id()]);
 
         return redirect()->route('vittles.order');
     }
@@ -62,12 +68,14 @@ class AuthController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+        $this->diagnostics->event('info', 'auth.register.succeeded', __METHOD__, ['user_id' => $user->id]);
 
         return redirect()->route('vittles.order');
     }
 
     public function logout(Request $request): RedirectResponse
     {
+        $this->diagnostics->event('info', 'auth.logout', __METHOD__, ['user_id' => Auth::id()]);
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

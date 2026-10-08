@@ -12,13 +12,14 @@ class TraceStoreTest extends TestCase
 {
     public function test_sensitive_values_are_redacted_before_a_trace_is_saved(): void
     {
+        request()->attributes->set('correlation_id', 'abcdef0123456789');
         $traces = app(TraceStore::class);
         $traces->record(
             'POST', '/oauth/token', [],
             ['client_id' => 'partner-demo', 'client_secret' => 'private-secret', 'customer' => ['phone' => 'private-phone']],
             ['Authorization' => 'Bearer private-token'],
             new Response(new PsrResponse(200, ['Content-Type' => 'application/json'], json_encode(['access_token' => 'private-token', 'expires' => 90, 'trace_id' => 'trace-123']))),
-            12, 1,
+            12, 1, source: 'App\\Services\\Vittles\\VittlesClient::authenticate',
         );
 
         $trace = $traces->recent(1)[0];
@@ -28,6 +29,8 @@ class TraceStoreTest extends TestCase
         $this->assertStringNotContainsString('private-phone', $encoded);
         $this->assertSame('[REDACTED]', $trace['response_body']['access_token']);
         $this->assertSame('trace-123', $trace['response_body']['trace_id']);
+        $this->assertSame('abcdef0123456789', $trace['correlation_id']);
+        $this->assertSame('App\\Services\\Vittles\\VittlesClient::authenticate', $trace['source']);
     }
 
     public function test_admin_is_unavailable_outside_local_environment(): void

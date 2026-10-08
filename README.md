@@ -10,6 +10,8 @@ Laravel 12 + Blade. El comando Artisan cumple el [enunciado](docs/ENUNCIADO.md):
 
 Para la demo visual: `php artisan serve --host=127.0.0.1 --port=8000` y abrir `http://127.0.0.1:8000`. Registrar la primera cuenta local en `/register` y luego ingresar por `/login`; se abre la página de inicio. La primera cuenta accede al [ADMIN](docs/ADMIN_DIAGNOSTICS.md) en `/admin`, que permite probar endpoints y revisar trazas locales redactadas. El comando Artisan funciona sin cuenta web. Pruebas: `php artisan test`.
 
+Para investigar errores: copiar el ID de diagnóstico del pie, buscarlo en `app/storage/logs/integration.log` y filtrar las trazas de ADMIN por ese ID. La [guía de logs](docs/LOGGING.md) indica cómo llegar al método PHP correspondiente.
+
 **Decisiones:** nombre exacto; precio y total final del POS; `client_ref` estable por clave de solicitud, sede e ítem; búsqueda antes del POST y bloqueo local entre procesos; sin reintento ciego del POST. Para una intención nueva con el mismo producto, usar `--request-key=otro-identificador`. El mock no hace `client_ref` idempotente, por lo que una carrera entre máquinas o un POST sin respuesta no permite prometer *exactly once*. Ante duda se muestra `UNKNOWN`. La [documentación corregida](docs/Docs_API/vittles/FIX_API_DOCS.md) registra lo observado.
 
 **Dejé fuera a propósito:** recuperación de contraseña, email verificado, pagos, base de datos de negocio, despliegue y garantía de idempotencia distribuida. Esta última requiere soporte atómico del POS o una operación de creación idempotente del proveedor. **Uso de IA:** se usó Codex para analizar el mock, proponer diseño, implementar y revisar; el código y las decisiones deben defenderse en la entrevista.

@@ -13,6 +13,8 @@ Levantar el mock y Laravel como indica el README principal. Registrar la primera
 
 Cada intento queda en `app/storage/app/private/vittles-traces.jsonl`, ignorado por Git. El filtro **Errores** incluye HTTP 4xx/5xx, fallos de transporte y respuestas `REJECTED`. Las trazas muestran un `operation_id` para relacionar llamadas de un mismo cliente y un `attempt` para distinguir reintentos. Se retienen las 120 más recientes en pantalla; el archivo conserva hasta 2 MB antes de reducirse a las últimas 250 líneas. Las pruebas automatizadas usan un archivo separado.
 
+Cada traza nueva incluye además `correlation_id` y `source`. El ID aparece en el pie de la página web y en el header `X-Diagnostic-Id`; se puede filtrar en ADMIN y buscar en `app/storage/logs/integration.log`. La [guía de logs](LOGGING.md) explica cómo llegar desde ese ID al método PHP en VS Code. Las trazas antiguas anteriores a esta ampliación pueden no tener esos campos.
+
 Para documentar una diferencia, anotar el endpoint, el caso probado, el HTTP y los campos observados. Corroborar con `mock_server.py` cuando se trate de un fallo aleatorio o una condición difícil de reproducir. Registrar solo la corrección técnica y su evidencia en `docs/Docs_API/vittles/FIX_API_DOCS.md`; no copiar secretos ni datos personales. El ADMIN no modifica ese archivo automáticamente.
 
 El mock limita globalmente a 30 requests por 60 segundos. El recorrido completo consume varias llamadas, incluida la autenticación; si aparece 429, esperar a la siguiente ventana antes de repetir la prueba. Evitar repetir POST de creación tras un resultado incierto: usar la búsqueda por `client_ref` o dejar el estado como desconocido.

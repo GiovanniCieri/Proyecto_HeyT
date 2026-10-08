@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\Vittles\CatalogService;
 use App\Services\Vittles\OrderService;
 use App\Services\Vittles\VittlesException;
+use App\Support\DiagnosticLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -13,6 +14,8 @@ use InvalidArgumentException;
 
 class VittlesController extends Controller
 {
+    public function __construct(private readonly DiagnosticLog $diagnostics) {}
+
     public function index(CatalogService $catalog): View
     {
         return view('vittles.order', $this->catalogData($catalog));
@@ -33,9 +36,12 @@ class VittlesController extends Controller
         try {
             $result = $orders->place($input['location'], $input['item']);
         } catch (InvalidArgumentException|VittlesException $e) {
+            $this->diagnostics->event('warning', 'web.order.failed', __METHOD__, ['error_type' => $e::class, 'http_status' => $e instanceof VittlesException ? $e->httpStatus : null]);
+
             return back()->withInput()->with('operation_error', $e->getMessage());
         }
 
+        $this->diagnostics->event('info', 'web.order.finished', __METHOD__, ['result' => $result['status'], 'order_id' => $result['order']['id'] ?? null]);
         $request->session()->put('vittles_last_result', $result);
 
         return redirect()->route('vittles.result');
@@ -45,6 +51,8 @@ class VittlesController extends Controller
     {
         $result = $request->session()->get('vittles_last_result');
         if (! is_array($result)) {
+            $this->diagnostics->event('info', 'web.result.empty', __METHOD__);
+
             return redirect()->route('vittles.order');
         }
 
@@ -54,11 +62,17 @@ class VittlesController extends Controller
     private function catalogData(CatalogService $catalog): array
     {
         try {
+            $cache = Cache::store('file');
+            $hit = $cache->has('vittles-web-catalog');
+            $this->diagnostics->event('info', 'web.catalog.requested', __METHOD__, ['cache_hit' => $hit]);
+
             return [
-                'catalog' => Cache::store('file')->remember('vittles-web-catalog', 10, fn () => $catalog->load()),
+                'catalog' => $cache->remember('vittles-web-catalog', 10, fn () => $catalog->load()),
                 'catalogError' => null,
             ];
         } catch (VittlesException $e) {
+            $this->diagnostics->event('warning', 'web.catalog.failed', __METHOD__, ['error_type' => $e::class, 'http_status' => $e->httpStatus]);
+
             return ['catalog' => ['locations' => [], 'menus' => []], 'catalogError' => $e->getMessage()];
         }
     }

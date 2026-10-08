@@ -20,5 +20,6 @@
 - No exponer client_secret ni bearer tokens en logs, capturas, código de ejemplo o interfaz web.
 - No presentar un HTTP 200 como orden creada sin validar el cuerpo. No repetir a ciegas un POST cuyo resultado sea incierto.
 - Mantener ADMIN como diagnóstico del mock local: restringir a loopback, redactar campos sensibles antes de guardar trazas y actualizar FIX_API_DOCS.md solo con discrepancias técnicas verificadas.
+- Los eventos de aplicación van a `app/storage/logs/integration.log` con `correlation_id`, `event` y `source`. No añadir cuerpos HTTP, contraseñas, secretos ni bearer tokens; conservar el vínculo con las trazas de ADMIN.
 - Probar el mismo comando dos veces contra el mismo proceso del mock y comprobar que la segunda ejecución conserva ID y total sin crear otra orden.
 - El README final de entrega debe ser breve, incluir comando exacto, decisiones, exclusiones deliberadas y declaración de uso de IA.

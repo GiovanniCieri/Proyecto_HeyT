@@ -67,10 +67,14 @@ class VittlesClient
         try {
             $response = Http::acceptJson()->timeout(6)->connectTimeout(2)->post($this->url('/oauth/token'), $payload);
         } catch (ConnectionException) {
-            $this->traces->record('POST', '/oauth/token', [], $payload, [], null, $this->elapsed($started), 1, 'Conexión interrumpida', $this->operationId);
+            $this->traces->record('POST', '/oauth/token', [], $payload, [], null, $this->elapsed($started), 1, 'Conexión interrumpida', $this->operationId, __METHOD__);
             throw new VittlesException('No se pudo conectar con Vittles para autenticarse.');
         }
-        $this->traces->record('POST', '/oauth/token', [], $payload, [], $response, $this->elapsed($started), 1, operationId: $this->operationId);
+        $this->traces->record('POST', '/oauth/token', [], $payload, [], $response, $this->elapsed($started), 1, operationId: $this->operationId, source: __METHOD__);
+
+        if ($response->status() === 429) {
+            throw new VittlesException('Vittles alcanzó el límite de peticiones (HTTP 429). Esperá a que se libere la ventana de 60 segundos.', 429);
+        }
 
         if (! $response->successful()) {
             throw new VittlesException('Vittles rechazó la autenticación (HTTP '.$response->status().').', $response->status());
@@ -104,7 +108,7 @@ class VittlesClient
                     ? $pending->get($this->url($path), $data)
                     : $pending->post($this->url($path), $data);
             } catch (ConnectionException) {
-                $this->traces->record($method, $path, $method === 'GET' ? $data : [], $method === 'POST' ? $data : [], $headers, null, $this->elapsed($started), $attempt, 'Conexión interrumpida', $this->operationId);
+                $this->traces->record($method, $path, $method === 'GET' ? $data : [], $method === 'POST' ? $data : [], $headers, null, $this->elapsed($started), $attempt, 'Conexión interrumpida', $this->operationId, __METHOD__);
                 if ($method === 'POST') {
                     throw new UnknownOutcome('Se perdió la respuesta del POST; su resultado es incierto.');
                 }
@@ -115,7 +119,7 @@ class VittlesClient
                 }
                 throw new VittlesException('Se perdió la conexión al consultar Vittles.');
             }
-            $this->traces->record($method, $path, $method === 'GET' ? $data : [], $method === 'POST' ? $data : [], $headers, $response, $this->elapsed($started), $attempt, operationId: $this->operationId);
+            $this->traces->record($method, $path, $method === 'GET' ? $data : [], $method === 'POST' ? $data : [], $headers, $response, $this->elapsed($started), $attempt, operationId: $this->operationId, source: __METHOD__);
 
             if ($response->status() === 401 && ! $refreshed) {
                 $this->token = null;

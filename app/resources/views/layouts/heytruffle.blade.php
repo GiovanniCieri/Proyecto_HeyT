@@ -40,6 +40,9 @@
     <footer class="site-footer">
         <span>Demo local de integración con Vittles POS</span>
         <span>Diseño inspirado en <a href="https://heytruffle.ai/" target="_blank" rel="noopener noreferrer">heytruffle.ai</a> · No es un producto oficial</span>
+        @if (request()->attributes->has('correlation_id'))
+            <span>Diagnóstico: <code>{{ request()->attributes->get('correlation_id') }}</code></span>
+        @endif
     </footer>
     @stack('scripts')
 </body>

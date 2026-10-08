@@ -7,6 +7,7 @@
     <p class="eyebrow">INTEGRACIÓN VITTLES POS · ADMIN</p>
     <h1>Lo que Vittles <em>realmente devuelve.</em></h1>
     <p class="hero-copy">Probá cada endpoint y revisá solicitudes, respuestas, tiempos, reintentos y errores. Esta sección funciona solo con el mock local.</p>
+    <p class="hero-copy">Cada petición web tiene un ID de diagnóstico visible al pie. Usalo para encontrar sus llamadas a Vittles y buscar el mismo ID en VS Code.</p>
 </section>
 
 <div class="admin-shell">
@@ -97,8 +98,9 @@
     </section>
 
     <section class="panel admin-traces" id="traces">
-        <div class="traces-heading"><div><p class="section-number">REGISTRO HTTP</p><h2>Peticiones y respuestas.</h2></div><nav class="trace-filters" aria-label="Filtrar trazas"><a @class(['selected' => $filter === 'all']) href="{{ route('admin.index', ['filter' => 'all']) }}#traces">Todas</a><a @class(['selected' => $filter === 'errors']) href="{{ route('admin.index', ['filter' => 'errors']) }}#traces">Errores</a><a @class(['selected' => $filter === 'post']) href="{{ route('admin.index', ['filter' => 'post']) }}#traces">POST</a></nav></div>
-        <p class="muted">Últimas 120 trazas; un reintento aparece como otra fila. El archivo local rota al superar 2 MB. Los campos sensibles conocidos se redactan antes de guardarse.</p>
+        <div class="traces-heading"><div><p class="section-number">REGISTRO HTTP</p><h2>Peticiones y respuestas.</h2></div><nav class="trace-filters" aria-label="Filtrar trazas"><a @class(['selected' => $filter === 'all']) href="{{ route('admin.index', ['filter' => 'all', 'id' => $searchId]) }}#traces">Todas</a><a @class(['selected' => $filter === 'errors']) href="{{ route('admin.index', ['filter' => 'errors', 'id' => $searchId]) }}#traces">Errores</a><a @class(['selected' => $filter === 'post']) href="{{ route('admin.index', ['filter' => 'post', 'id' => $searchId]) }}#traces">POST</a></nav></div>
+        <form method="get" action="{{ route('admin.index') }}#traces" class="trace-search"><label for="trace-id">ID de diagnóstico</label><input id="trace-id" name="id" value="{{ $searchId }}" placeholder="Ej. 8f3a..." maxlength="16" pattern="[a-f0-9]{16}"><input type="hidden" name="filter" value="{{ $filter }}"><button type="submit">Buscar trazas</button><a href="{{ route('admin.index') }}#traces">Limpiar</a></form>
+        <p class="muted">Últimas 120 trazas; un reintento aparece como otra fila. Para seguir el recorrido completo, buscá el ID en <code>app/storage/logs/integration.log</code> desde VS Code. El archivo de trazas rota al superar 2 MB. Los campos sensibles conocidos se redactan antes de guardarse.</p>
         <div class="trace-list">
             @forelse ($traces as $trace)
                 @php
@@ -113,7 +115,7 @@
                         <span class="trace-duration">{{ $trace['duration_ms'] }} ms · intento {{ $trace['attempt'] }}</span>
                     </summary>
                     <div class="trace-detail">
-                        <div><h3>Solicitud</h3><pre>{{ json_encode(['operation_id' => $trace['operation_id'] ?? null, 'method' => $trace['method'], 'path' => $trace['path'], 'query' => $trace['query'], 'headers' => $trace['request_headers'], 'body' => $trace['request_body']], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) }}</pre></div>
+                        <div><h3>Solicitud</h3><pre>{{ json_encode(['correlation_id' => $trace['correlation_id'] ?? null, 'operation_id' => $trace['operation_id'] ?? null, 'source' => $trace['source'] ?? null, 'method' => $trace['method'], 'path' => $trace['path'], 'query' => $trace['query'], 'headers' => $trace['request_headers'], 'body' => $trace['request_body']], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) }}</pre></div>
                         <div><h3>Respuesta</h3><pre>{{ json_encode(['status' => $trace['status'], 'headers' => $trace['response_headers'], 'body' => $trace['response_body'], 'transport_error' => $trace['transport_error']], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) }}</pre></div>
                     </div>
                 </details>

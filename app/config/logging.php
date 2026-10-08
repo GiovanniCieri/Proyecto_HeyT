@@ -65,6 +65,13 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'integration' => [
+            'driver' => 'single',
+            'path' => storage_path(env('APP_ENV') === 'testing' ? 'logs/integration-testing.log' : 'logs/integration.log'),
+            'level' => 'info',
+            'replace_placeholders' => true,
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),

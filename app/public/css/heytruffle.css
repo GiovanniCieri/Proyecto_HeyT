@@ -59,4 +59,42 @@ select:disabled,button:disabled{opacity:.5;cursor:not-allowed}
 code{overflow-wrap:anywhere;color:var(--cream)}
 .site-footer{max-width:1320px;margin:auto;border-top:1px solid var(--line);padding:26px 5%;display:flex;justify-content:space-between;gap:15px;color:var(--muted);font-size:12px}
 .site-footer a{text-underline-offset:3px}
+.admin-hero{padding-bottom:88px}
+.admin-shell{max-width:1220px;margin:-34px auto 70px;padding:0 24px;position:relative;display:grid;gap:24px}
+.admin-overview{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.admin-overview>div{background:var(--panel);border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:20px 24px;display:flex;flex-direction:column;gap:8px}
+.admin-overview strong{font:400 28px "Gowun Batang",Georgia,serif}
+.admin-probes>.muted{margin-top:-9px;margin-bottom:26px}
+.probe-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.probe-card{background:var(--deep);border:1px solid var(--line);border-radius:20px;padding:21px;display:flex;flex-direction:column;align-items:stretch;min-width:0}
+.probe-method{font:600 14px Inter,"Segoe UI",sans-serif;color:var(--orange);overflow-wrap:anywhere}
+.probe-card p{color:var(--muted);font-size:12px;line-height:1.5;margin:12px 0 14px}
+.probe-card label{font-size:12px;margin:14px 0 7px}
+.probe-card input{width:100%;min-height:43px;color:var(--cream);background:#292125;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font:inherit;font-size:13px}
+.probe-card input:focus-visible{outline:3px solid #ffbc7d;outline-offset:2px}
+.probe-button{border:1px solid rgba(239,114,0,.65);border-radius:999px;background:rgba(239,114,0,.14);color:var(--cream);min-height:42px;padding:8px 16px;font-weight:600;font-size:12px;margin-top:auto;text-align:left}
+.probe-button:hover{background:var(--orange)}
+.probe-card-create{border-color:var(--orange)}
+.probe-output{background:var(--deep);border:1px solid var(--orange);border-radius:18px;padding:20px;margin:0 0 26px}
+.probe-output pre,.trace-detail pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.5 Consolas,"Courier New",monospace;color:var(--cream);margin:10px 0 0}
+.traces-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.traces-heading h2{margin-bottom:12px}
+.trace-filters{display:flex;flex-wrap:wrap;gap:7px}
+.trace-filters a{color:var(--cream);text-decoration:none;padding:9px 13px;border-radius:999px;background:var(--deep);font-size:12px}
+.trace-filters a.selected{background:var(--orange);font-weight:700}
+.trace-list{display:grid;gap:8px;margin-top:24px}
+.trace-entry{background:var(--deep);border:1px solid var(--line);border-radius:14px;min-width:0}
+.trace-entry summary{display:grid;grid-template-columns:170px 55px minmax(120px,1fr) 130px 135px;gap:11px;align-items:center;padding:14px 18px;list-style:none;cursor:pointer;font-size:12px}
+.trace-entry summary::-webkit-details-marker{display:none}
+.trace-entry[open]{border-color:var(--orange)}
+.trace-time,.trace-duration{color:var(--muted)}
+.trace-method{font-weight:700;color:var(--orange)}
+.trace-path{overflow-wrap:anywhere}
+.trace-status{font-weight:700;text-align:right}
+.trace-error{color:#ffb98a}
+.trace-detail{border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:15px;padding:17px}
+.trace-detail>div{min-width:0;background:#292125;border-radius:12px;padding:13px}
+.trace-detail h3{font-size:12px;margin:0;color:var(--orange);letter-spacing:.08em;text-transform:uppercase}
 @media(max-width:760px){.header-inner{align-items:flex-start;flex-direction:column}.site-header nav{justify-content:flex-start}.site-header nav a{font-size:12px;padding:9px 12px}.hero{padding:50px 18px 70px}.content-grid{grid-template-columns:1fr;margin-top:-25px;padding:0 16px}.panel{padding:25px;border-radius:24px}.site-footer{flex-direction:column}h2{font-size:30px}}
+@media(max-width:900px){.trace-entry summary{grid-template-columns:1fr 60px 1.5fr;gap:6px}.trace-status,.trace-duration{text-align:left}.trace-detail{grid-template-columns:1fr}}
+@media(max-width:700px){.admin-shell{padding:0 16px}.admin-overview{grid-template-columns:1fr 1fr}.admin-overview>div:last-child{grid-column:1/-1}.probe-grid{grid-template-columns:1fr}.traces-heading{flex-direction:column}.trace-entry summary{grid-template-columns:1fr 65px;gap:7px}.trace-path{grid-column:1/-1;grid-row:2}.trace-status{grid-column:1}.trace-duration{grid-column:2;text-align:right}.admin-overview strong{font-size:23px}}

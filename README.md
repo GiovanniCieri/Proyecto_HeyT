@@ -8,7 +8,7 @@ Laravel 12 + Blade. El comando Artisan cumple el [enunciado](docs/ENUNCIADO.md):
 2. En otra terminal: `cd app`, `composer install`, copiar `.env.example` a `.env` (`Copy-Item .env.example .env` en PowerShell), configurar allí `VITTLES_CLIENT_ID` y `VITTLES_CLIENT_SECRET` con los valores del mock y ejecutar `php artisan key:generate`.
 3. **Comando exacto:** `php artisan vittles:order loc_1001 "Buffalo Wings (12)"`. Ejecutarlo dos veces sin reiniciar el mock: la primera muestra `CREATED`; la segunda, `EXISTING` con el mismo ID y total.
 
-Para la demo visual: `php artisan serve --host=127.0.0.1 --port=8000` y abrir `http://127.0.0.1:8000`. Pruebas: `php artisan test --filter=VittlesIntegrationTest`.
+Para la demo visual: `php artisan serve --host=127.0.0.1 --port=8000` y abrir `http://127.0.0.1:8000`. El [ADMIN](docs/ADMIN_DIAGNOSTICS.md) está en `http://127.0.0.1:8000/admin`: permite probar endpoints y revisar trazas locales redactadas. Pruebas: `php artisan test`.
 
 **Decisiones:** nombre exacto; precio y total final del POS; `client_ref` estable por clave de solicitud, sede e ítem; búsqueda antes del POST y bloqueo local entre procesos; sin reintento ciego del POST. Para una intención nueva con el mismo producto, usar `--request-key=otro-identificador`. El mock no hace `client_ref` idempotente, por lo que una carrera entre máquinas o un POST sin respuesta no permite prometer *exactly once*. Ante duda se muestra `UNKNOWN`. La [documentación corregida](docs/Docs_API/vittles/FIX_API_DOCS.md) registra lo observado.
 

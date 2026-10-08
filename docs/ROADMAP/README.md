@@ -10,6 +10,7 @@ El archivo docs/ENUNCIADO.md define la entrega evaluable. Los roadmaps separan e
 | 4 | [TESTING_DELIVERY.md](TESTING_DELIVERY.md) | Entrega local armada | Sí: pruebas y entregables |
 | 5 | [WEB_UI.md](WEB_UI.md) | Demo implementada | No: páginas adicionales |
 | 6 | [USER_AUTH.md](USER_AUTH.md) | Diferido | No: cuentas, login y registro |
+| 7 | [ADMIN_DIAGNOSTICS.md](ADMIN_DIAGNOSTICS.md) | Implementado para mock local | No: diagnóstico web solicitado |
 
 La demo WEB_UI fue pedida expresamente y reutiliza el flujo de integración. USER_AUTH sigue diferido porque el enunciado solo pide autenticación con Vittles. Otros roadmaps futuros, solo si surge la necesidad: despliegue, observabilidad de producción y conexión a un POS real.
 

@@ -12,6 +12,15 @@ class VittlesClient
 
     private int $tokenExpiresAt = 0;
 
+    private array $lastAuthentication = [];
+
+    private string $operationId;
+
+    public function __construct(private readonly TraceStore $traces)
+    {
+        $this->operationId = bin2hex(random_bytes(5));
+    }
+
     public function get(string $path, array $query = []): array
     {
         return $this->send('GET', $path, $query);
@@ -20,6 +29,28 @@ class VittlesClient
     public function createOrder(array $payload, string $locationId): array
     {
         return $this->send('POST', '/v1/orders', $payload, ['X-Vittles-Location' => $locationId]);
+    }
+
+    public function inspectAuthentication(): array
+    {
+        $this->token = null;
+        $this->authenticate();
+
+        return [
+            'access_token' => '[REDACTED]',
+            'token_type' => $this->lastAuthentication['token_type'] ?? null,
+            'expires' => $this->lastAuthentication['expires'] ?? null,
+            'response_keys' => array_keys($this->lastAuthentication),
+        ];
+    }
+
+    public function probeRejectedOrder(): array
+    {
+        return $this->send('POST', '/v1/orders', [
+            'location_id' => 'loc_1001',
+            'client_ref' => 'heyt-admin-invalid-probe',
+            'items' => [],
+        ]);
     }
 
     private function authenticate(): void
@@ -31,14 +62,15 @@ class VittlesClient
             throw new VittlesException('Faltan VITTLES_CLIENT_ID o VITTLES_CLIENT_SECRET en .env.');
         }
 
+        $payload = ['client_id' => $id, 'client_secret' => $secret];
+        $started = microtime(true);
         try {
-            $response = Http::acceptJson()->timeout(6)->connectTimeout(2)->post($this->url('/oauth/token'), [
-                'client_id' => $id,
-                'client_secret' => $secret,
-            ]);
+            $response = Http::acceptJson()->timeout(6)->connectTimeout(2)->post($this->url('/oauth/token'), $payload);
         } catch (ConnectionException) {
+            $this->traces->record('POST', '/oauth/token', [], $payload, [], null, $this->elapsed($started), 1, 'Conexión interrumpida', $this->operationId);
             throw new VittlesException('No se pudo conectar con Vittles para autenticarse.');
         }
+        $this->traces->record('POST', '/oauth/token', [], $payload, [], $response, $this->elapsed($started), 1, operationId: $this->operationId);
 
         if (! $response->successful()) {
             throw new VittlesException('Vittles rechazó la autenticación (HTTP '.$response->status().').', $response->status());
@@ -51,6 +83,7 @@ class VittlesClient
 
         $this->token = $data['access_token'];
         $this->tokenExpiresAt = time() + max(1, (int) $data['expires']);
+        $this->lastAuthentication = array_diff_key($data, ['access_token' => true]);
     }
 
     private function send(string $method, string $path, array $data, array $headers = []): array
@@ -63,6 +96,7 @@ class VittlesClient
                 $this->authenticate();
             }
 
+            $started = microtime(true);
             try {
                 $pending = Http::acceptJson()->withToken($this->token)
                     ->withHeaders($headers)->timeout(6)->connectTimeout(2);
@@ -70,6 +104,7 @@ class VittlesClient
                     ? $pending->get($this->url($path), $data)
                     : $pending->post($this->url($path), $data);
             } catch (ConnectionException) {
+                $this->traces->record($method, $path, $method === 'GET' ? $data : [], $method === 'POST' ? $data : [], $headers, null, $this->elapsed($started), $attempt, 'Conexión interrumpida', $this->operationId);
                 if ($method === 'POST') {
                     throw new UnknownOutcome('Se perdió la respuesta del POST; su resultado es incierto.');
                 }
@@ -80,6 +115,7 @@ class VittlesClient
                 }
                 throw new VittlesException('Se perdió la conexión al consultar Vittles.');
             }
+            $this->traces->record($method, $path, $method === 'GET' ? $data : [], $method === 'POST' ? $data : [], $headers, $response, $this->elapsed($started), $attempt, operationId: $this->operationId);
 
             if ($response->status() === 401 && ! $refreshed) {
                 $this->token = null;
@@ -136,5 +172,10 @@ class VittlesClient
     private function url(string $path): string
     {
         return rtrim((string) config('vittles.base_url'), '/').$path;
+    }
+
+    private function elapsed(float $started): int
+    {
+        return (int) round((microtime(true) - $started) * 1000);
     }
 }

@@ -12,6 +12,9 @@ bash scripts/console.sh
 
 Los accesos directos entran en `app/` y abren el mismo comando Artisan. También se puede ejecutar `php artisan vittles:console` manualmente desde `app/`. El mock se inicia con `scripts/start.ps1` o `bash scripts/start.sh` en otra terminal; la consola interactiva no requiere que la web esté abierta.
 
+En Windows, si se abre `scripts/console.cmd` con doble clic, la ventana espera una tecla después de salir o de mostrar un error. Si no hay una terminal interactiva disponible, el comando informa el problema y termina sin repetir el menú.
+El acceso busca PHP 8.2 o superior entre las instalaciones de `PATH` y ejecuta esa ruta explícitamente. Esto evita que un PHP 7.4 colocado primero por otra aplicación rompa Laravel. Si no encuentra una versión compatible, muestra el requisito antes de cargar Artisan.
+
 La primera pantalla permite **Ingresar**, **Registrarse**, leer el README, ver el comando exacto del ejercicio o salir. Usa las mismas cuentas SQLite que `/login` y `/register`; la contraseña se pide sin eco en la terminal. El registro está habilitado solo en entorno local. La primera cuenta es ADMIN, como en la web. La sesión dura mientras el menú está abierto y no inicia una sesión del navegador.
 
 En una terminal real se abre una pantalla exclusiva: encabezado y navegación arriba, contenido y preguntas debajo. Cada opción redibuja la pantalla; al terminar, Enter devuelve al menú. Los pedidos y las trazas se paginan de seis en seis para mantener visible la navegación; se elige una fila por número y se cambia de página con `S` o `A`. Al salir se restaura la pantalla anterior de la terminal. En tests o salidas no TTY se conserva el flujo de texto normal.

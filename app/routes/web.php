@@ -5,6 +5,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VittlesController;
 use Illuminate\Support\Facades\Route;
 
+// GET /healthz: confirma que esta aplicación Laravel responde, sin consultar Vittles ni exponer credenciales.
+Route::get('/healthz', fn () => response()->json(['service' => 'heytruffle-vittles-demo', 'status' => 'ok']));
+
 Route::middleware('guest')->group(function () {
     // GET /login: muestra el acceso a las cuentas locales de la demo.
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

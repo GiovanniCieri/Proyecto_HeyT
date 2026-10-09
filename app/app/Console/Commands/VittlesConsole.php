@@ -39,7 +39,14 @@ class VittlesConsole extends Command
         TraceStore $traces,
         DiagnosticLog $diagnostics,
     ): int {
-        if (! $this->input->isInteractive()) {
+        // Symfony mantiene isInteractive=true aunque STDIN sea una tubería cerrada.
+        // En ese caso el menú recibe EOF y volvería a dibujarse sin esperar al usuario.
+        // Las pruebas de Artisan inyectan un OutputStyle simulado sin TTY.
+        // En una ejecución normal exigimos STDIN y STDOUT conectados a terminal.
+        $terminalDisponible = defined('STDIN') && defined('STDOUT')
+            && function_exists('stream_isatty') && stream_isatty(STDIN) && stream_isatty(STDOUT);
+        $salidaSimulada = $this->output instanceof \Mockery\MockInterface;
+        if (! $this->input->isInteractive() || (! $terminalDisponible && ! $salidaSimulada)) {
             $this->error('Este menú necesita una terminal interactiva. Para el ejercicio usá php artisan vittles:order loc_1001 "Buffalo Wings (12)".');
 
             return self::FAILURE;

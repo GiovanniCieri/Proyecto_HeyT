@@ -24,18 +24,16 @@ function SetEnvValue($name, $value) {
 }
 
 Write-Host "`n  heytruffle*  |  VITTLES POS" -ForegroundColor Yellow
-Write-Host '  Instalacion local · Laravel + mock' -ForegroundColor White
+Write-Host '  Instalacion local | Laravel + mock' -ForegroundColor White
 
 Step 1 'Comprobando herramientas'
-foreach ($command in @('php', 'composer')) { if (-not (Get-Command $command -ErrorAction SilentlyContinue)) { Fail "Falta $command en PATH." } }
-$phpVersion = (& php -r 'echo PHP_VERSION_ID;').Trim()
-if ($LASTEXITCODE -ne 0 -or [int]$phpVersion -lt 80200) { Fail 'Se requiere PHP 8.2 o superior.' }
-$python = if (Get-Command py -ErrorAction SilentlyContinue) { (& py -3 -c 'import sys; print(sys.executable)' 2>$null) } elseif (Get-Command python3 -ErrorAction SilentlyContinue) { (& python3 -c 'import sys; print(sys.executable)' 2>$null) } else { (& python -c 'import sys; print(sys.executable)' 2>$null) }
-if (-not $python -or $LASTEXITCODE -ne 0) { Fail 'Se requiere Python 3.9 o superior.' }
-$python = ($python | Select-Object -First 1).Trim()
-& $python -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)'
-if ($LASTEXITCODE -ne 0) { Fail 'Se requiere Python 3.9 o superior.' }
-Write-Host '  PHP, Composer y Python listos.' -ForegroundColor Green
+if (-not (Get-Command composer -ErrorAction SilentlyContinue)) { Fail 'Falta Composer en PATH.' }
+try { $php = & (Join-Path $PSScriptRoot 'resolve-php.ps1') } catch { Fail 'Se requiere PHP 8.2 o superior en PATH.' }
+# Composer usa php desde PATH; adelantamos el ejecutable elegido solo en este proceso.
+$env:PATH = "$(Split-Path -Parent $php);$env:PATH"
+try { $python = & (Join-Path $PSScriptRoot 'resolve-python.ps1') } catch { Fail 'Se requiere Python 3.9 o superior en PATH o mediante py -3.' }
+Write-Host "  PHP compatible: $php" -ForegroundColor Green
+Write-Host '  Composer y Python listos.' -ForegroundColor Green
 
 Step 2 'Instalando dependencias PHP'
 Write-Host '  Composer instala desde composer.lock; la generacion de autoload puede tardar varios minutos.' -ForegroundColor DarkGray
@@ -80,7 +78,7 @@ if (-not (Test-Path $envFile)) { Copy-Item (Join-Path $app '.env.example') $envF
 else { Write-Host '  .env existente conservado.' }
 if (-not (EnvValue 'APP_KEY')) {
     Push-Location $app
-    try { & php artisan key:generate --no-interaction; if ($LASTEXITCODE -ne 0) { Fail 'No se pudo generar APP_KEY.' } }
+    try { & $php artisan key:generate --no-interaction; if ($LASTEXITCODE -ne 0) { Fail 'No se pudo generar APP_KEY.' } }
     finally { Pop-Location }
 }
 
@@ -106,6 +104,6 @@ Step 5 'Preparando SQLite sin borrar datos'
 $database = Join-Path $app 'database/database.sqlite'
 if (-not (Test-Path $database)) { [System.IO.File]::WriteAllBytes($database, [byte[]]@()); Write-Host '  Base SQLite creada.' }
 Push-Location $app
-try { & php artisan migrate --force; if ($LASTEXITCODE -ne 0) { Fail 'Las migraciones fallaron.' } }
+try { & $php artisan migrate --force; if ($LASTEXITCODE -ne 0) { Fail 'Las migraciones fallaron.' } }
 finally { Pop-Location }
 Write-Host "`nLISTO. Arranca ambos servicios con: .\scripts\start.ps1" -ForegroundColor Green

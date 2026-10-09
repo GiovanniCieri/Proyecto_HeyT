@@ -4,17 +4,18 @@ Laravel 12 + Blade. El comando se autentica, obtiene todas las locations, intent
 
 **Requisitos:** PHP 8.2+, Composer y Python 3.9+. El instalador conserva `.env`, `APP_KEY` y SQLite existentes. Cuando faltan, pide las credenciales indicadas en el [README original del mock](docs/Docs_API/vittles/README.md), sin mostrar la clave.
 
-```text
-# Terminal 1, desde la raíz (Windows PowerShell)
-.\scripts\install.ps1
-.\scripts\start.ps1
+**Scripts `resolve` (Windows):** `resolve-php.ps1` busca un PHP 8.2+ aunque otro PHP aparezca primero en `PATH`; `resolve-python.ps1` busca Python 3.9+ para el mock. Instalación y arranque los usan automáticamente; consola y `artisan.cmd` usan el selector de PHP. No hay que ejecutarlos a mano: no instalan programas ni cambian el `PATH` global.
 
-# Terminal 2, comando evaluable
-cd app
-php artisan vittles:order loc_1001 "Buffalo Wings (12)"
+```text
+# Terminal 1, desde la raíz (Windows)
+.\scripts\install.cmd
+.\scripts\start.cmd
+
+# Terminal 2, comando evaluable con PHP compatible
+.\scripts\artisan.cmd vittles:order loc_1001 "Buffalo Wings (12)"
 ```
 
-El arranque abre el mock en `127.0.0.1:8422` y la web en `http://127.0.0.1:8000`; `Ctrl+C` detiene los procesos que inició. En macOS/Linux: `bash scripts/install.sh` y `bash scripts/start.sh`. Repetir **el mismo comando** sin reiniciar el mock: debe informar `EXISTING` con el mismo ID y total. Otra compra requiere `--request-key=otra-clave`. Pruebas: `php artisan test` desde `app/`. Puertos ocupados y otras opciones: [guía de arranque](docs/LOCAL_SETUP.md).
+El arranque abre el mock en `127.0.0.1:8422` y la web en `http://127.0.0.1:8000`, o reconoce los servicios si ya están abiertos. En macOS/Linux: `bash scripts/install.sh`, `bash scripts/start.sh` y `bash scripts/artisan.sh vittles:order loc_1001 "Buffalo Wings (12)"`. Repetir **el mismo comando** sin reiniciar el mock: debe informar `EXISTING` con el mismo ID y total. Otra compra requiere `--request-key=otra-clave`. Pruebas: `scripts/artisan.cmd test` o `bash scripts/artisan.sh test`. Opciones: [guía de arranque](docs/LOCAL_SETUP.md).
 
 **Decisiones:** nombre exacto para evitar ambigüedad; disponibilidad por sede porque los menús difieren; total final del POS para no inventar importes. Generamos una referencia estable y buscamos antes del POST porque `client_ref` no deduplica. Ante resultado incierto, conciliamos sin repetir el POST; el estado puede ser `UNKNOWN`. Las diferencias observadas entre documentación y mock, con evidencia y corrección, están en [FIX_API_DOCS.md](docs/Docs_API/vittles/FIX_API_DOCS.md).
 

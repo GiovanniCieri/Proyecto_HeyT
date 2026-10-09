@@ -24,3 +24,7 @@ Los archivos se nombran `AAAA-MM-DD_NN_ID_descripcion.md`. `NN` conserva el orde
 | 18 | [SETUP-002](2026-10-08_18_SETUP-002_progreso-instalacion.md) | Progreso y tiempo visible durante Composer |
 | 19 | [CLI-004](2026-10-08_19_CLI-004_acceso-directo-consola.md) | Acceso directo al menú interactivo desde la raíz |
 | 20 | [CLI-005](2026-10-08_20_CLI-005_acceso-consola-en-scripts.md) | Accesos de consola movidos a scripts |
+| 21 | [CLI-006](2026-10-08_21_CLI-006_consola-no-se-cierra.md) | Ventana de consola visible y salida segura sin TTY |
+| 22 | [SETUP-003](2026-10-08_22_SETUP-003_php-compatible-windows.md) | Selección de PHP 8.2+ en scripts de Windows |
+| 23 | [SETUP-004](2026-10-08_23_SETUP-004_arranque-portable.md) | Arranque repetible, salud HTTP y accesos portables |
+| 24 | [DOC-004](2026-10-08_24_DOC-004_aclaracion-resolve.md) | Explicación de los selectores PHP y Python en README |

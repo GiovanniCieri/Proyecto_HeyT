@@ -30,6 +30,9 @@ El arranque abre el mock en `127.0.0.1:8422` y la web en `http://127.0.0.1:8000`
 <img width="1900" height="911" alt="image" src="https://github.com/user-attachments/assets/4001d4c4-66cc-432d-9f5f-a5f478a6cb82" />
 <img width="1903" height="916" alt="image" src="https://github.com/user-attachments/assets/63e4f42b-70b9-4e51-aba0-c62834d511ad" />
 <img width="1896" height="911" alt="image" src="https://github.com/user-attachments/assets/037464a1-0111-404b-a6da-34c46f85e314" />
+<img width="694" height="430" alt="image" src="https://github.com/user-attachments/assets/245f6858-cb0a-40ac-8b89-b533e7a7e5c5" />
+<img width="809" height="506" alt="image" src="https://github.com/user-attachments/assets/b6145250-fac4-45ad-a396-62daa49cb7ba" />
+
 
 
 

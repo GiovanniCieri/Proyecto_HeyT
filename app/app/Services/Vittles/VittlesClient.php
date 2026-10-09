@@ -58,6 +58,17 @@ class VittlesClient
         ]);
     }
 
+    /** Reproduce el JSON publicado sin el header de sede para mostrar el rechazo que descubrió la auditoría. */
+    public function probeDocumentedOrder(): array
+    {
+        return $this->send('POST', '/v1/orders', [
+            'location_id' => 'loc_1001',
+            'client_ref' => 'heyt-admin-docs-'.bin2hex(random_bytes(5)),
+            'customer' => ['name' => 'Jane D.', 'phone' => '+13055550101'],
+            'items' => [['item_id' => 'itm_88', 'quantity' => 2]],
+        ]);
+    }
+
     /**
      * Obtiene un bearer con las credenciales de entorno. El mock responde expires,
      * no expires_in; el token se renueva antes de vencer y nunca se registra en claro.

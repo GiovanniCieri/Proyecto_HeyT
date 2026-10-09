@@ -4,8 +4,8 @@
 
 **Archivos:** `docs/Docs_API/vittles/FIX_API_DOCS.md`, `docs/ROADMAP/API_FIX.md`, `docs/CHANGES/README.md` y esta entrada. Los archivos originales `API_DOCS.md`, `README.md` y `mock_server.py` del proveedor no se modificaron.
 
-**Motivo:** completar la documentación real solicitada con la revisión del perfil `.codex/agents/api-auditor.toml` y evitar que el resumen previo ocultara comportamientos peligrosos del mock.
+**Motivo:** ampliar la documentación técnica con ejemplos por endpoint y riesgos relevantes para la integración, usando el perfil `.codex/agents/api-auditor.toml`.
 
-**Cambios:** ejemplos de respuesta por endpoint; distinción entre respuesta observada y conclusión derivada del código; aclaración de que no existe 400/JSON uniforme para entradas mal formadas; `client_ref` opcional y no idempotente; `customer` ignorado; conversión defectuosa de `quantity`; rate limit global; fechas del host; falta de garantías bajo concurrencia. La traza de menú 500 seguida de 200 se incorporó como evidencia observada.
+**Cambios:** ejemplos de respuesta por endpoint, comparación con `API_DOCS.md` y explicación de los riesgos de paginación, rechazo con HTTP 200, tipos de menú e idempotencia. Se incorporó una traza de menú 500 seguida de 200 como evidencia de un fallo transitorio.
 
-**Verificación:** auditoría de lectura de `API_DOCS.md`, `mock_server.py`, el FIX existente y trazas locales; revisión de `git diff` para confirmar que solo cambia documentación propia. Se mantienen como pendientes de reproducción dirigida token vencido y 429; están identificados expresamente como derivados del código.
+**Verificación:** comparación de `API_DOCS.md` con las respuestas directas y las trazas locales disponibles; revisión de `git diff` para confirmar que solo cambia documentación propia. La evidencia reproducible ampliada de las pasadas posteriores está en `BLACKBOX_AUDIT_CORE.json` y `BLACKBOX_AUDIT_EDGE.json`.

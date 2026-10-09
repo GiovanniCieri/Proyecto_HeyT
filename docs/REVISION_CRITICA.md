@@ -15,7 +15,7 @@
 | Resumen | Si se creó, ID y total | Por location, creación, ID y total | Resultado de la sede elegida y conteo de lecturas. Distinguir `CREATED` de `EXISTING`. |
 | Entrega | Código, README de media página y lista de exclusiones; declarar IA | Igual | Esos entregables son obligatorios. El mail pide además responder fecha estimada y tres opciones horarias: es coordinación, no parte del software. |
 
-**Jerarquía práctica:** la petición actual del candidato determina que ahora hacemos diseño y análisis, no desarrollo, y reitera expresamente el alcance del mail. El README tiene una formulación diferente, que se registra sin ampliar la implementación. Para el contrato técnico del ejercicio, el comportamiento ejecutado del mock gana sobre `API_DOCS.md`, como ambos enunciados indican. El código fuente ayuda a investigar, pero una prueba de respuesta confirma lo que verá el cliente. En producción no se tomaría un mock como contrato de la API real.
+**Jerarquía práctica:** la petición actual del candidato determina que ahora hacemos diseño y análisis, no desarrollo, y reitera expresamente el alcance del mail. El README tiene una formulación diferente, que se registra sin ampliar la implementación. Para el contrato técnico del ejercicio, las respuestas HTTP observadas del mock ganan sobre `API_DOCS.md`, como ambos enunciados indican. En producción no se tomaría un mock como contrato de la API real.
 
 **No asumir sin verificar:** que `client_ref` deduplica, que una respuesta `2xx` significa orden creada, que hay una sola página, que `available` siempre es booleano, que precio siempre es número, que el token dura una hora, que `created_at` representa UTC, que existe un menú accesible para todas las sedes, que el producto tiene el mismo ID/precio/disponibilidad en todas, o que una consulta vacía garantiza que nunca hubo una orden.
 
@@ -91,7 +91,7 @@ El **menú de la sede** es la fuente para identificar el producto y su disponibi
 
 El adaptador de Vittles normaliza diferencias conocidas (`menuItems`, `expires`, `0`/`1`, `Retry-After-Ms`) y conserva un modelo interno uniforme. **Tolerancia limitada:** aceptar formatos comprobados y validar campos críticos; no aceptar cualquier estructura “por si acaso”. Un `menuItems` ausente, `next_cursor` cíclico, una orden `ACCEPTED` sin ID o un total inválido son errores de contrato y deben fallar visiblemente. Un cambio incompatible de ruta, semántica de `client_ref`, campos obligatorios o estado de orden es un *breaking change* para esta integración.
 
-La fecha `created_at` no se usa para decidir nada porque el mock coloca sufijo `Z` sobre hora local. Si hiciera falta fecha operativa, habría que corregir el contrato o usar una marca temporal inequívoca como `updated` con unidad documentada.
+La fecha `created_at` no se usa para decidir nada: el sufijo `Z` aparece en la respuesta, pero la zona horaria efectiva no se validó de manera independiente. Si hiciera falta fecha operativa, habría que confirmar su semántica o usar una marca temporal inequívoca con unidad documentada.
 
 ## 6. Seguridad y observabilidad
 

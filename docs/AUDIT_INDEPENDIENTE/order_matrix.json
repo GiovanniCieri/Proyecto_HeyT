@@ -1,0 +1,243 @@
+{
+  "observations": [
+    {
+      "case": "auth",
+      "request": {
+        "method": "POST",
+        "path": "/oauth/token",
+        "headers": {},
+        "body": {
+          "client_id": "partner-demo",
+          "client_secret": "[REDACTED]"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:14:42 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "access_token": "[REDACTED]",
+          "token_type": "bearer",
+          "expires": 90
+        }
+      }
+    },
+    {
+      "case": "all_body_aliases",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-matrix-f92a4a4159d941e5addc9c7c508a8ed6",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ],
+          "locationId": "loc_1001",
+          "location": "loc_1001",
+          "location_context": "loc_1001",
+          "store_id": "loc_1001",
+          "storeId": "loc_1001",
+          "restaurant_id": "loc_1001",
+          "restaurantId": "loc_1001",
+          "merchant_id": "loc_1001",
+          "merchantId": "loc_1001",
+          "site_id": "loc_1001",
+          "siteId": "loc_1001",
+          "outlet_id": "loc_1001",
+          "outletId": "loc_1001",
+          "venue_id": "loc_1001",
+          "venueId": "loc_1001",
+          "branch_id": "loc_1001",
+          "branchId": "loc_1001",
+          "business_id": "loc_1001",
+          "businessId": "loc_1001",
+          "context_location_id": "loc_1001",
+          "contextLocationId": "loc_1001"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:14:42 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "nested_context_aliases",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-matrix-f92a4a4159d941e5addc9c7c508a8ed6",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ],
+          "context": {
+            "location": "loc_1001",
+            "location_id": "loc_1001",
+            "locationId": "loc_1001",
+            "store_id": "loc_1001"
+          },
+          "location_context": {
+            "id": "loc_1001",
+            "location_id": "loc_1001"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:14:42 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "all_header_aliases",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "Location-Id": "loc_1001",
+          "Location": "loc_1001",
+          "X-Location-Id": "loc_1001",
+          "X-Location": "loc_1001",
+          "X-Vittles-Location": "loc_1001",
+          "X-Vittles-Location-Id": "loc_1001",
+          "X-Store-Id": "loc_1001",
+          "X-Restaurant-Id": "loc_1001",
+          "X-POS-Location-Id": "loc_1001",
+          "X-Partner-Location-Id": "loc_1001",
+          "X-Location-Context": "loc_1001",
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-matrix-f92a4a4159d941e5addc9c7c508a8ed6",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:14:42 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": "ord_5515",
+          "status": "ACCEPTED",
+          "total": 31.0,
+          "created_at": "2026-10-08T22:14:42Z",
+          "updated": 1791508482118,
+          "client_ref": "audit-matrix-f92a4a4159d941e5addc9c7c508a8ed6"
+        }
+      }
+    },
+    {
+      "case": "accepted_read",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders/ord_5515",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:14:42 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": "ord_5515",
+          "status": "ACCEPTED",
+          "total": 31.0,
+          "created_at": "2026-10-08T22:14:42Z",
+          "updated": 1791508482118,
+          "client_ref": "audit-matrix-f92a4a4159d941e5addc9c7c508a8ed6"
+        }
+      }
+    },
+    {
+      "case": "accepted_repeat",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "Location-Id": "loc_1001",
+          "Location": "loc_1001",
+          "X-Location-Id": "loc_1001",
+          "X-Location": "loc_1001",
+          "X-Vittles-Location": "loc_1001",
+          "X-Vittles-Location-Id": "loc_1001",
+          "X-Store-Id": "loc_1001",
+          "X-Restaurant-Id": "loc_1001",
+          "X-POS-Location-Id": "loc_1001",
+          "X-Partner-Location-Id": "loc_1001",
+          "X-Location-Context": "loc_1001",
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-matrix-f92a4a4159d941e5addc9c7c508a8ed6",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:14:42 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": "ord_5516",
+          "status": "ACCEPTED",
+          "total": 31.0,
+          "created_at": "2026-10-08T22:14:42Z",
+          "updated": 1791508482173,
+          "client_ref": "audit-matrix-f92a4a4159d941e5addc9c7c508a8ed6"
+        }
+      }
+    }
+  ]
+}

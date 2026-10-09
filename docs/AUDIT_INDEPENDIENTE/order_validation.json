@@ -1,0 +1,177 @@
+{
+  "observations": [
+    {
+      "case": "auth",
+      "request": {
+        "method": "POST",
+        "path": "/oauth/token",
+        "headers": {},
+        "body": {
+          "client_id": "partner-demo",
+          "client_secret": "[REDACTED]"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:05:45 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "access_token": "[REDACTED]",
+          "token_type": "bearer",
+          "expires": 90
+        }
+      }
+    },
+    {
+      "case": "empty_body",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Vittles-Location": "loc_1001"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:05:45 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "unknown location_id"
+        }
+      }
+    },
+    {
+      "case": "empty_items",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Vittles-Location": "loc_1001"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-invalid-922c761092ee45f68ccd121c98cbfe54",
+          "customer": "[REDACTED]",
+          "items": []
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:05:45 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "no items"
+        }
+      }
+    },
+    {
+      "case": "quantity_zero",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Vittles-Location": "loc_1001"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-invalid-922c761092ee45f68ccd121c98cbfe54",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 0
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:05:45 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": "ord_5510",
+          "status": "ACCEPTED",
+          "total": 15.5,
+          "created_at": "2026-10-08T22:05:45Z",
+          "updated": 1791507945493,
+          "client_ref": "audit-invalid-922c761092ee45f68ccd121c98cbfe54"
+        }
+      }
+    },
+    {
+      "case": "unknown_item",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Vittles-Location": "loc_1001"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-invalid-922c761092ee45f68ccd121c98cbfe54",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_unknown_audit",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:05:45 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "item not on this menu"
+        }
+      }
+    },
+    {
+      "case": "unknown_location",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Vittles-Location": "loc_1001"
+        },
+        "body": {
+          "location_id": "loc_unknown_audit",
+          "client_ref": "audit-invalid-922c761092ee45f68ccd121c98cbfe54",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:05:45 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "unknown location_id"
+        }
+      }
+    }
+  ]
+}

@@ -20,7 +20,7 @@ Para `Buffalo Wings (12)`, estos son resultados posibles **según la sede que se
 | Warehouse (`loc_1004`) | Menú inaccesible: sede inactiva (`403`) | — |
 | Beachside (`loc_1005`) | Ítem no disponible | — |
 
-Con `--location loc_1001` se crearía **una sola orden** por USD 31.00; la segunda ejecución la mostraría como **ya existente** con el mismo ID y total. Los importes se derivan del código del mock; los contratos más relevantes se comprobaron además contra el servidor levantado localmente.
+Con `--location loc_1001` se crearía **una sola orden** por USD 31.00; la segunda ejecución la mostraría como **ya existente** con el mismo ID y total. El precio de USD 15.50 se observó en el menú HTTP de esa sede; una creación de dos unidades devolvió USD 31.00.
 
 ## 2. Decisiones principales
 
@@ -33,7 +33,7 @@ Con `--location loc_1001` se crearía **una sola orden** por USD 31.00; la segun
 | Monto | `Decimal` al leer precios y al mostrar totales; el total de la respuesta es la cifra autoritativa | El menú mezcla números y cadenas; el dinero no debe depender de `float` en el cliente. |
 | Idempotencia | Referencia determinista por lote, sede, ítem y cantidad; consultar órdenes por `client_ref` antes de crear | El mock no aplica la idempotencia que prometen los docs. |
 | Errores | Reintentos acotados para lecturas ante `429`/`500` y renovación única del token ante `401`; una creación incierta se verifica por `client_ref` antes de considerar cualquier reenvío | Evita fallos transitorios y reduce el riesgo de duplicados. |
-| Ejecución | Secuencial | Cinco sedes no justifican concurrencia y así se respeta mejor el límite global de solicitudes. |
+| Ejecución | Secuencial | Cinco sedes no justifican concurrencia y se reduce la presión sobre el rate limit observado. |
 
 ### Opciones consideradas
 
@@ -43,7 +43,7 @@ Con `--location loc_1001` se crearía **una sola orden** por USD 31.00; la segun
 
 ## 3. Comportamiento real que condiciona el diseño
 
-La documentación del ZIP se usa como hipótesis; el código del mock revela estos contratos efectivos. Autenticación, paginación, `menuItems`, `403`, `REJECTED` y falta de deduplicación también se comprobaron con solicitudes locales al mock:
+La documentación del ZIP se usa como hipótesis y se contrasta con respuestas HTTP. Autenticación, paginación, `menuItems`, `403`, `REJECTED` y falta de deduplicación se comprobaron con solicitudes locales al mock:
 
 | Área | Documentación | Mock / decisión propuesta |
 | --- | --- | --- |
@@ -55,10 +55,10 @@ La documentación del ZIP se usa como hipótesis; el código del mock revela est
 | Sede inactiva | No especificada | `GET menu` devuelve `403`; registrar el motivo en el resumen. |
 | Creación | `201` o `400` | Puede devolver `200` con `status: REJECTED`; verificar estado del cuerpo, no solo HTTP. |
 | Contexto de sede | No documentado | `POST /v1/orders` exige `X-Vittles-Location` igual a `location_id`. |
-| Cliente en payload | El ejemplo de creación incluye `customer` | El mock no lo exige; no enviar datos personales ficticios sin necesidad. |
+| Cliente en payload | El ejemplo de creación incluye `customer` | El POST de prueba se aceptó sin `customer`; no enviar datos personales ficticios sin necesidad. |
 | `client_ref` | Repetirlo devuelve la misma orden | No hay deduplicación al crear; `GET /v1/orders?client_ref=...` permite buscar órdenes existentes. |
-| Límite | 60/min, `Retry-After` en segundos | 30/min global, `Retry-After-Ms` en milisegundos; respetar ese encabezado y prever el estándar. |
-| Tiempo | `created_at` UTC por sufijo `Z` | El mock forma esa cadena desde hora local; no usarla para idempotencia ni decisiones de negocio. |
+| Límite | 60/min, `Retry-After` en segundos | Se observó HTTP 429 con `Retry-After-Ms: 4000`; respetar ese encabezado. El cupo exacto queda por medir. |
+| Tiempo | `created_at` UTC por sufijo `Z` | No se validó la zona horaria efectiva; no usar ese campo para idempotencia ni decisiones de negocio. |
 
 El endpoint de consulta por `client_ref` está presente en el mock aunque no figure en `API_DOCS.md`. La solución del ejercicio dependerá de él; esa dependencia debe declararse en el README. En una API real, habría que confirmar su soporte y semántica con el proveedor.
 
@@ -156,7 +156,7 @@ En otra terminal:
 
 ```powershell
 $env:VITTLES_CLIENT_ID = 'partner-demo'
-$env:VITTLES_CLIENT_SECRET = 's3cr3t-demo'
+$env:VITTLES_CLIENT_SECRET = '<valor-del-README-original>'
 py -3 -m vittles_pos --location loc_1001 --item 'Buffalo Wings (12)'
 py -3 -m vittles_pos --location loc_1001 --item 'Buffalo Wings (12)'
 ```
@@ -209,7 +209,7 @@ Las primeras diez filas se desprenden del material entregado. Las últimas tres 
 | El menú cambia de tipos y nombre de campo | Error al parsear o cálculo incorrecto | Adaptador en `client.py`: `menuItems`, precio convertido a `Decimal`, disponibilidad `bool` o `0`/`1`; rechazar datos desconocidos | Pruebas con `15.5`, `"15.50"`, `true`, `1`, `0` |
 | El token vence en 90 segundos y el mensaje del `401` no es estable | Fallos a mitad de la corrida | Usar el tiempo de expiración recibido con margen y renovar una sola vez ante cualquier `401` de una ruta protegida | Prueba de token vencido o sustitución controlada de respuesta |
 | `GET menu` falla a veces con `500` | Resultado intermitente | Reintentos limitados con espera creciente y pequeña variación; si se agotan, `FAILED` para esa sede y continuar | Ejecutar varias corridas o prueba con transporte simulado |
-| El límite real es 30 solicitudes/minuto y devuelve `Retry-After-Ms` | `429` repetidos, posible bloqueo temporal | Flujo secuencial; respetar milisegundos del encabezado y admitir `Retry-After` estándar como alternativa | Prueba de respuesta `429` simulada |
+| El servidor devuelve `429` con `Retry-After-Ms` y aún no se midió el cupo exacto | `429` repetidos, posible bloqueo temporal | Flujo secuencial; respetar milisegundos del encabezado y admitir `Retry-After` estándar como alternativa | Captura HTTP en `BLACKBOX_AUDIT_EDGE.json` |
 | Un `POST` responde `200` con `REJECTED` | Falso éxito si solo se mira el código HTTP | Validar `status == ACCEPTED`, `id` y `total`; registrar el motivo del rechazo | Prueba de orden sin encabezado de sede |
 | `client_ref` no deduplica en el servidor | Dos ejecuciones crean dos órdenes | Referencia estable + búsqueda previa por `client_ref`; nunca asumir que repetir `POST` es seguro | Dos corridas con `--location loc_1001` sin reiniciar el mock: una sola orden |
 | La respuesta a `POST` se pierde después de que el servidor creó la orden | Un reintento ciego la duplicaría | Tratar el resultado como incierto; consultar por `client_ref` antes de decidir. Si la consulta falla, informar `FAILED/UNKNOWN` sin volver a crear | Prueba con transporte que simule corte después de enviar |
@@ -298,5 +298,5 @@ flowchart LR
 1. **Alcance:** queda fijado por la consigna reiterada: `--location ID` obligatorio y una sola orden posible por ejecución. Documentar la discrepancia del README sin extender el programa.
 2. **Identidad de una intención:** el mismo `batch-id` y los mismos argumentos significan reintento; un lote nuevo exige otro `batch-id`. El valor demo fijo es práctico para el ejercicio, pero no sirve como identificador de pedidos reales.
 3. **Salida del proceso:** proponer `0` cuando la orden de la sede seleccionada fue creada o ya existía, `2` para entrada inválida o imposibilidad de negocio, `3` para fallo técnico/contrato y `4` para resultado incierto.
-4. **Entorno de demostración:** verificar `py -3`, arrancar un mock fresco y ejecutar dos veces **sin reiniciarlo**. Evitar pruebas exploratorias inmediatamente antes de la demo: el límite de 30 solicitudes/minuto es global y el encabezado `Retry-After-Ms: 4000` no garantiza que la ventana de 60 segundos ya haya liberado cupo.
+4. **Entorno de demostración:** verificar `py -3`, arrancar un mock fresco y ejecutar dos veces **sin reiniciarlo**. Evitar ráfagas de pruebas exploratorias inmediatamente antes de la demo: se observó HTTP 429 con `Retry-After-Ms: 4000`, pero el cupo exacto y su alcance quedan por medir.
 5. **Entrega administrativa:** el mail también pide una fecha realista y tres opciones de día/rango horario para la entrevista. Eso no es parte del código, pero debe contestarse al remitente.

@@ -1,0 +1,334 @@
+{
+  "method": "API_DOCS.md plus HTTP only",
+  "base_url": "http://127.0.0.1:8422",
+  "observations": [
+    {
+      "case": "auth_without_bearer",
+      "method": "POST",
+      "path": "/oauth/token",
+      "http": 200,
+      "body": {
+        "access_token": "<redacted>",
+        "token_type": "bearer",
+        "expires": 90
+      },
+      "headers": {}
+    },
+    {
+      "case": "locations_without_bearer",
+      "method": "GET",
+      "path": "/v1/locations",
+      "http": 401,
+      "body": {
+        "error": "missing token"
+      },
+      "headers": {}
+    },
+    {
+      "case": "locations_unknown_bearer",
+      "method": "GET",
+      "path": "/v1/locations",
+      "http": 401,
+      "body": {
+        "error": "unknown token"
+      },
+      "headers": {}
+    },
+    {
+      "case": "locations_page_1",
+      "method": "GET",
+      "path": "/v1/locations",
+      "http": 200,
+      "body": {
+        "data": [
+          {
+            "id": "loc_1001",
+            "name": "Vittles Demo - Midtown",
+            "timezone": "America/New_York",
+            "active": true
+          },
+          {
+            "id": "loc_1002",
+            "name": "Vittles Demo - Riverside",
+            "timezone": "America/New_York",
+            "active": true
+          }
+        ],
+        "next_cursor": "2"
+      },
+      "headers": {}
+    },
+    {
+      "case": "locations_page_2",
+      "method": "GET",
+      "path": "/v1/locations?cursor=2",
+      "http": 200,
+      "body": {
+        "data": [
+          {
+            "id": "loc_1003",
+            "name": "Vittles Demo - Airport",
+            "timezone": "America/Chicago",
+            "active": true
+          },
+          {
+            "id": "loc_1004",
+            "name": "Vittles Demo - Warehouse (legacy)",
+            "timezone": "America/Chicago",
+            "active": false
+          }
+        ],
+        "next_cursor": "4"
+      },
+      "headers": {}
+    },
+    {
+      "case": "locations_page_3",
+      "method": "GET",
+      "path": "/v1/locations?cursor=4",
+      "http": 200,
+      "body": {
+        "data": [
+          {
+            "id": "loc_1005",
+            "name": "Vittles Demo - Beachside",
+            "timezone": "America/Los_Angeles",
+            "active": true
+          }
+        ]
+      },
+      "headers": {}
+    },
+    {
+      "case": "menu_loc_1001",
+      "method": "GET",
+      "path": "/v1/locations/loc_1001/menu",
+      "http": 200,
+      "body": {
+        "menuItems": [
+          {
+            "id": "itm_88",
+            "name": "Buffalo Wings (12)",
+            "price": 15.5,
+            "available": true,
+            "category": "wings"
+          },
+          {
+            "id": "itm_91",
+            "name": "Loaded Fries",
+            "price": "8.25",
+            "available": 1,
+            "category": "sides"
+          },
+          {
+            "id": "itm_95",
+            "name": "Nashville Hot Cauliflower",
+            "price": 11.0,
+            "available": 0,
+            "category": "sides"
+          }
+        ]
+      },
+      "headers": {}
+    },
+    {
+      "case": "menu_loc_1002",
+      "method": "GET",
+      "path": "/v1/locations/loc_1002/menu",
+      "http": 200,
+      "body": {
+        "menuItems": [
+          {
+            "id": "itm_88",
+            "name": "Buffalo Wings (12)",
+            "price": "15.50",
+            "available": 1,
+            "category": "wings"
+          },
+          {
+            "id": "itm_77",
+            "name": "Smoked Wings (24)",
+            "price": 27.9,
+            "available": true,
+            "category": "wings"
+          }
+        ]
+      },
+      "headers": {}
+    },
+    {
+      "case": "menu_loc_1003",
+      "method": "GET",
+      "path": "/v1/locations/loc_1003/menu",
+      "http": 200,
+      "body": {
+        "menuItems": [
+          {
+            "id": "itm_88",
+            "name": "Buffalo Wings (12)",
+            "price": 16.25,
+            "available": true,
+            "category": "wings"
+          },
+          {
+            "id": "itm_12",
+            "name": "House Salad",
+            "price": "7.00",
+            "available": false,
+            "category": "sides"
+          }
+        ]
+      },
+      "headers": {}
+    },
+    {
+      "case": "menu_loc_1004",
+      "method": "GET",
+      "path": "/v1/locations/loc_1004/menu",
+      "http": 403,
+      "body": {
+        "error": "location is not enabled for partner access"
+      },
+      "headers": {}
+    },
+    {
+      "case": "menu_loc_1005",
+      "method": "GET",
+      "path": "/v1/locations/loc_1005/menu",
+      "http": 200,
+      "body": {
+        "menuItems": [
+          {
+            "id": "itm_88",
+            "name": "Buffalo Wings (12)",
+            "price": "15.50",
+            "available": 0,
+            "category": "wings"
+          },
+          {
+            "id": "itm_31",
+            "name": "Fish Tacos (3)",
+            "price": 14.0,
+            "available": 1,
+            "category": "tacos"
+          }
+        ]
+      },
+      "headers": {}
+    },
+    {
+      "case": "menu_unknown_location",
+      "method": "GET",
+      "path": "/v1/locations/unknown-audit/menu",
+      "http": 404,
+      "body": {
+        "error": "no such location"
+      },
+      "headers": {}
+    },
+    {
+      "case": "order_unknown_id",
+      "method": "GET",
+      "path": "/v1/orders/unknown-audit",
+      "http": 404,
+      "body": {
+        "error": "no such order"
+      },
+      "headers": {}
+    },
+    {
+      "case": "post_without_location_header",
+      "method": "POST",
+      "path": "/v1/orders",
+      "http": 200,
+      "body": {
+        "status": "REJECTED",
+        "reason": "missing location context"
+      },
+      "headers": {}
+    },
+    {
+      "case": "post_empty_items",
+      "method": "POST",
+      "path": "/v1/orders",
+      "http": 200,
+      "body": {
+        "status": "REJECTED",
+        "reason": "no items"
+      },
+      "headers": {}
+    },
+    {
+      "case": "post_first",
+      "method": "POST",
+      "path": "/v1/orders",
+      "http": 201,
+      "body": {
+        "id": "ord_5503",
+        "status": "ACCEPTED",
+        "total": 31.0,
+        "created_at": "2026-10-08T21:44:32Z",
+        "updated": 1791506672737,
+        "client_ref": "blackbox-audit-1791506672718557300"
+      },
+      "headers": {}
+    },
+    {
+      "case": "post_same_client_ref",
+      "method": "POST",
+      "path": "/v1/orders",
+      "http": 201,
+      "body": {
+        "id": "ord_5504",
+        "status": "ACCEPTED",
+        "total": 31.0,
+        "created_at": "2026-10-08T21:44:32Z",
+        "updated": 1791506672738,
+        "client_ref": "blackbox-audit-1791506672718557300"
+      },
+      "headers": {}
+    },
+    {
+      "case": "lookup_by_client_ref",
+      "method": "GET",
+      "path": "/v1/orders?client_ref=blackbox-audit-1791506672718557300",
+      "http": 200,
+      "body": {
+        "data": [
+          {
+            "id": "ord_5503",
+            "status": "ACCEPTED",
+            "total": 31.0,
+            "created_at": "2026-10-08T21:44:32Z",
+            "updated": 1791506672737,
+            "client_ref": "blackbox-audit-1791506672718557300"
+          },
+          {
+            "id": "ord_5504",
+            "status": "ACCEPTED",
+            "total": 31.0,
+            "created_at": "2026-10-08T21:44:32Z",
+            "updated": 1791506672738,
+            "client_ref": "blackbox-audit-1791506672718557300"
+          }
+        ]
+      },
+      "headers": {}
+    },
+    {
+      "case": "read_created_order",
+      "method": "GET",
+      "path": "/v1/orders/ord_5503",
+      "http": 200,
+      "body": {
+        "id": "ord_5503",
+        "status": "ACCEPTED",
+        "total": 31.0,
+        "created_at": "2026-10-08T21:44:32Z",
+        "updated": 1791506672737,
+        "client_ref": "blackbox-audit-1791506672718557300"
+      },
+      "headers": {}
+    }
+  ]
+}

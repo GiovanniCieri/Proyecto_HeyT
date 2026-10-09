@@ -1,0 +1,7 @@
+# Local Python artifacts from the API audit.
+__pycache__/
+*.py[cod]
+
+# Local editor and OS files.
+.DS_Store
+Thumbs.db

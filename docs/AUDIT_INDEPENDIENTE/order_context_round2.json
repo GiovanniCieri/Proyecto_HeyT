@@ -1,0 +1,242 @@
+{
+  "observations": [
+    {
+      "case": "auth_valid",
+      "request": {
+        "method": "POST",
+        "path": "/oauth/token",
+        "headers": {},
+        "body": {
+          "client_id": "partner-demo",
+          "client_secret": "[REDACTED]"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "access_token": "[REDACTED]",
+          "token_type": "bearer",
+          "expires": 90
+        }
+      }
+    },
+    {
+      "case": "header_x_location_context",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Location-Context": "loc_1001"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-d12af6bec85e4c06bbf106a20636b236",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "header_x_store_id",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Store-Id": "loc_1001"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-d12af6bec85e4c06bbf106a20636b236",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "query_location_id",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders?location_id=loc_1001",
+        "headers": {},
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-d12af6bec85e4c06bbf106a20636b236",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "body_locationId",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {},
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-d12af6bec85e4c06bbf106a20636b236",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ],
+          "locationId": "loc_1001"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "body_store_id",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {},
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-d12af6bec85e4c06bbf106a20636b236",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ],
+          "store_id": "loc_1001"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "location_scoped_path",
+      "request": {
+        "method": "POST",
+        "path": "/v1/locations/loc_1001/orders",
+        "headers": {},
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-d12af6bec85e4c06bbf106a20636b236",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "error": "not found"
+        }
+      }
+    },
+    {
+      "case": "get_unknown",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders/ord_nonexistent_audit",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "error": "no such order"
+        }
+      }
+    },
+    {
+      "case": "get_unknown_no_token",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders/ord_nonexistent_audit",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "error": "missing token"
+        }
+      }
+    }
+  ]
+}

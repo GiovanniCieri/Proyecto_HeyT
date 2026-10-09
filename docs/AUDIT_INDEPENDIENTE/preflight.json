@@ -1,0 +1,200 @@
+{
+  "observations": [
+    {
+      "case": "auth_first_execution",
+      "request": {
+        "method": "POST",
+        "path": "/oauth/token",
+        "headers": {},
+        "body": {
+          "client_id": "partner-demo",
+          "client_secret": "[REDACTED]"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:26 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "access_token": "[REDACTED]",
+          "token_type": "bearer",
+          "expires": 90
+        }
+      }
+    },
+    {
+      "case": "preflight_no_order",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders?client_ref=audit-preflight-934165f9b2d14a41a363f4106d125121",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:26 GMT",
+          "Content-Type": "application/json"
+        },
+        "summary": {
+          "type": "object",
+          "keys": [
+            "data"
+          ],
+          "error": null,
+          "target_order_ids": [],
+          "data_length": 0
+        }
+      }
+    },
+    {
+      "case": "create_once",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Vittles-Location": "loc_1001",
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-preflight-934165f9b2d14a41a363f4106d125121",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:26 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": "ord_5514",
+          "status": "ACCEPTED",
+          "total": 31.0,
+          "created_at": "2026-10-08T22:13:26Z",
+          "updated": 1791508406295,
+          "client_ref": "audit-preflight-934165f9b2d14a41a363f4106d125121"
+        }
+      }
+    },
+    {
+      "case": "lookup_after_creation",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders?client_ref=audit-preflight-934165f9b2d14a41a363f4106d125121",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:26 GMT",
+          "Content-Type": "application/json"
+        },
+        "summary": {
+          "type": "object",
+          "keys": [
+            "data"
+          ],
+          "error": null,
+          "target_order_ids": [
+            "ord_5514"
+          ],
+          "data_length": 1
+        }
+      }
+    },
+    {
+      "case": "auth_second_execution",
+      "request": {
+        "method": "POST",
+        "path": "/oauth/token",
+        "headers": {},
+        "body": {
+          "client_id": "partner-demo",
+          "client_secret": "[REDACTED]"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:26 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "access_token": "[REDACTED]",
+          "token_type": "bearer",
+          "expires": 90
+        }
+      }
+    },
+    {
+      "case": "second_execution_preflight",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders?client_ref=audit-preflight-934165f9b2d14a41a363f4106d125121",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:26 GMT",
+          "Content-Type": "application/json"
+        },
+        "summary": {
+          "type": "object",
+          "keys": [
+            "data"
+          ],
+          "error": null,
+          "target_order_ids": [
+            "ord_5514"
+          ],
+          "data_length": 1
+        }
+      }
+    },
+    {
+      "case": "second_execution_read_existing",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders/ord_5514",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:26 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": "ord_5514",
+          "status": "ACCEPTED",
+          "total": 31.0,
+          "created_at": "2026-10-08T22:13:26Z",
+          "updated": 1791508406295,
+          "client_ref": "audit-preflight-934165f9b2d14a41a363f4106d125121"
+        }
+      }
+    }
+  ]
+}

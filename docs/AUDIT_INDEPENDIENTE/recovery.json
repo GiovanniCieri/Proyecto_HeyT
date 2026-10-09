@@ -1,0 +1,163 @@
+{
+  "observations": [
+    {
+      "case": "auth_new_execution",
+      "request": {
+        "method": "POST",
+        "path": "/oauth/token",
+        "headers": {},
+        "body": {
+          "client_id": "partner-demo",
+          "client_secret": "[REDACTED]"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:21 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "access_token": "[REDACTED]",
+          "token_type": "bearer",
+          "expires": 90
+        }
+      }
+    },
+    {
+      "case": "read_prior_order_by_id",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders/ord_5512",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:21 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": "ord_5512",
+          "status": "ACCEPTED",
+          "total": 31.0,
+          "created_at": "2026-10-08T22:08:53Z",
+          "updated": 1791508133327,
+          "client_ref": "audit-confirm-82c11d5fd43a4f3f9ea2478f9381ce33"
+        }
+      }
+    },
+    {
+      "case": "query_client_ref",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders?client_ref=audit-confirm-82c11d5fd43a4f3f9ea2478f9381ce33",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:21 GMT",
+          "Content-Type": "application/json"
+        },
+        "summary": {
+          "type": "object",
+          "keys": [
+            "data"
+          ],
+          "error": null,
+          "target_order_ids": [
+            "ord_5512",
+            "ord_5513"
+          ],
+          "data_length": 2
+        }
+      }
+    },
+    {
+      "case": "query_clientRef",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders?clientRef=audit-confirm-82c11d5fd43a4f3f9ea2478f9381ce33",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:21 GMT",
+          "Content-Type": "application/json"
+        },
+        "summary": {
+          "type": "object",
+          "keys": [
+            "data"
+          ],
+          "error": null,
+          "target_order_ids": [],
+          "data_length": 0
+        }
+      }
+    },
+    {
+      "case": "path_by_client_ref",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders/by-client-ref/audit-confirm-82c11d5fd43a4f3f9ea2478f9381ce33",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:21 GMT",
+          "Content-Type": "application/json"
+        },
+        "summary": {
+          "type": "object",
+          "keys": [
+            "error"
+          ],
+          "error": "no such order",
+          "target_order_ids": []
+        }
+      }
+    },
+    {
+      "case": "path_ref_as_id",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders/audit-confirm-82c11d5fd43a4f3f9ea2478f9381ce33",
+        "headers": {
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:13:21 GMT",
+          "Content-Type": "application/json"
+        },
+        "summary": {
+          "type": "object",
+          "keys": [
+            "error"
+          ],
+          "error": "no such order",
+          "target_order_ids": []
+        }
+      }
+    }
+  ]
+}

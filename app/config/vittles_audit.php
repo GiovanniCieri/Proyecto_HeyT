@@ -1,17 +1,55 @@
 <?php
 
 /*
- * Relato curado del contrato observado. La procedencia de cada afirmación
- * está en docs/Docs_API/vittles/FIX_API_DOCS.md; esta página no sondea el POS.
+ * Relato curado de la auditoría HTTP independiente. La evidencia redactada
+ * está en docs/AUDIT_INDEPENDIENTE/ y la página no sondea el POS al abrirse.
  */
 return [
+    'investigation' => [
+        [
+            'title' => 'Partió del contrato publicado',
+            'action' => 'Leyó el enunciado y API_DOCS.md, y convirtió sus afirmaciones en pruebas HTTP.',
+            'result' => 'El ejemplo prometía crear una orden con el JSON mostrado y repetir client_ref sin duplicarla.',
+            'evidence' => 'docs/ENUNCIADO.md · docs/Docs_API/vittles/API_DOCS.md',
+        ],
+        [
+            'title' => 'Reprodujo el pedido documentado',
+            'action' => 'Autenticó, eligió Buffalo Wings (12) del menú de loc_1001 y envió el POST tal como figura en la guía.',
+            'result' => 'HTTP 200 · status REJECTED · reason missing location context. El 200 no significaba creación.',
+            'evidence' => 'docs/AUDIT_INDEPENDIENTE/evidence.json · order_create',
+        ],
+        [
+            'title' => 'Aisló el contexto faltante',
+            'action' => 'Repitió pruebas controladas cambiando el contexto de sede; luego agregó solo X-Vittles-Location: loc_1001 al pedido.',
+            'result' => 'El POST pasó a HTTP 201 ACCEPTED, con ID y total 31.0. Identificó un header que la guía omitía.',
+            'evidence' => 'docs/AUDIT_INDEPENDIENTE/header_isolation.json · confirmed_order.json',
+        ],
+        [
+            'title' => 'Comprobó qué ocurre al repetirlo',
+            'action' => 'Envió dos POST aceptados con el mismo cuerpo y client_ref y comparó los IDs.',
+            'result' => 'Ambos devolvieron 201, pero con IDs distintos. client_ref no evita duplicados en el mock.',
+            'evidence' => 'docs/AUDIT_INDEPENDIENTE/confirmed_order.json · repeat_same_ref_and_header',
+        ],
+        [
+            'title' => 'Buscó una forma de recuperar la orden',
+            'action' => 'Probó una consulta por client_ref, ausente en la guía, antes y después de crear; repitió la consulta con otro token.',
+            'result' => 'La referencia nueva devolvió data vacío; después del POST devolvió la orden y la segunda ejecución recuperó el mismo ID sin otro POST.',
+            'evidence' => 'docs/AUDIT_INDEPENDIENTE/recovery.json · preflight.json',
+        ],
+        [
+            'title' => 'Acotó la garantía',
+            'action' => 'Separó lo probado secuencialmente de los escenarios que necesitarían otra prueba.',
+            'result' => 'La consulta previa permite repetir este flujo; buscar y crear no son atómicos entre procesos. Un POST sin respuesta conserva resultado incierto.',
+            'evidence' => 'docs/AUDIT_INDEPENDIENTE/INFORME.md · Cobertura del documento y del ejercicio',
+        ],
+    ],
     'steps' => [
         'auth' => [
             'label' => 'Autenticación',
             'title' => 'El token no dura lo documentado.',
             'official' => 'API_DOCS.md promete expires_in: 3600 y una hora de vigencia.',
             'official_code' => '{ "access_token": "…", "expires_in": 3600 }',
-            'observed' => 'La respuesta HTTP trae expires: 90 y no incluye expires_in. El vencimiento efectivo de 90 segundos también aparece en TOKEN_TTL_SEC del mock.',
+            'observed' => 'La respuesta HTTP trae expires: 90 y no incluye expires_in. Tras esperar 98 segundos, una consulta con ese token devolvió HTTP 401.',
             'observed_code' => '{ "access_token": "[OCULTO]", "token_type": "bearer", "expires": 90 }',
             'impact' => 'Un cliente que lea solo expires_in no puede programar correctamente la renovación y terminaría consultando con un token vencido.',
             'decision' => 'VittlesClient lee expires, guarda el token solo en memoria y lo renueva antes del vencimiento.',
@@ -19,8 +57,8 @@ return [
             'claim' => 'El auditor tomó el nombre del campo y la duración del ejemplo de API_DOCS.md.',
             'probe' => 'Envió POST /oauth/token al mock y examinó el JSON HTTP 200, omitiendo el bearer al documentarlo.',
             'difference' => 'Comparó las claves: apareció expires=90; expires_in no apareció.',
-            'confirmation' => 'Revisó TOKEN_TTL_SEC y do_POST en mock_server.py y documentó el contrato corregido.',
-            'evidence' => 'Campo de respuesta observado por HTTP. Vencimiento efectivo derivado del código; no se esperaron 90 segundos para probarlo.',
+            'confirmation' => 'Un GET inmediato funcionó; tras 98 segundos con el mismo token, GET /v1/locations respondió HTTP 401: token no longer valid.',
+            'evidence' => 'AUDIT_INDEPENDIENTE/evidence.json: auth_valid · token_expiry.json: GET inmediato y vencido.',
             'source' => 'FIX_API_DOCS.md → POST /oauth/token',
         ],
         'locations' => [
@@ -36,8 +74,8 @@ return [
             'claim' => 'El auditor convirtió «Returns every location» en una hipótesis comprobable.',
             'probe' => 'Consultó GET /v1/locations y repitió GET con los cursores 2 y 4 devueltos por el servidor.',
             'difference' => 'Contó las respuestas 2/2/1 y encontró un campo de paginación ausente en la guía.',
-            'confirmation' => 'Contrastó do_GET del mock y dejó un test de integración que espera cinco sedes y cinco intentos de menú.',
-            'evidence' => 'Tres respuestas GET observadas directamente; total de cinco sedes comprobado.',
+            'confirmation' => 'Guardó las tres respuestas GET redactadas y verificó que el último JSON ya no traía next_cursor.',
+            'evidence' => 'AUDIT_INDEPENDIENTE/evidence.json: locations_valid, locations_cursor_2 y locations_cursor_4.',
             'source' => 'FIX_API_DOCS.md → GET /v1/locations',
         ],
         'menus' => [
@@ -53,8 +91,8 @@ return [
             'claim' => 'El auditor tomó el esquema de menú y la ausencia de casos para sedes inactivas de API_DOCS.md.',
             'probe' => 'Consultó el menú de loc_1001 y el de la sede inactiva loc_1004, comparando status y cuerpo.',
             'difference' => 'Encontró menuItems, variantes de tipos y HTTP 403 para la sede inactiva.',
-            'confirmation' => 'Revisó MENUS y do_GET en mock_server.py; las pruebas cubren precio string y producto no disponible.',
-            'evidence' => 'Campo, tipos y 403 observados por HTTP. El 500 aleatorio de menú también consta en una traza local.',
+            'confirmation' => 'Consultó los cinco menús devueltos por locations y comparó las respuestas; el quinto muestra disponibilidad 0 y el cuarto devuelve 403.',
+            'evidence' => 'AUDIT_INDEPENDIENTE/evidence.json: menu_loc_1001 a menu_loc_1005.',
             'source' => 'FIX_API_DOCS.md → GET /v1/locations/{location_id}/menu',
         ],
         'order' => [
@@ -62,16 +100,16 @@ return [
             'title' => 'HTTP 200 también puede significar rechazo.',
             'official' => 'La documentación no pide X-Vittles-Location y dice que un payload inválido devuelve HTTP 400.',
             'official_code' => 'POST /v1/orders + JSON documentado',
-            'observed' => 'Sin X-Vittles-Location, el mock responde HTTP 200 con status REJECTED y reason: missing location context.',
-            'observed_code' => 'HTTP 200 · { "status": "REJECTED", "reason": "missing location context" }',
+            'observed' => 'El POST del ejemplo oficial respondió HTTP 200 con REJECTED: faltaba el contexto de sede. Al agregar solo X-Vittles-Location, respondió 201 ACCEPTED.',
+            'observed_code' => "Sin header → 200 REJECTED\nCon X-Vittles-Location → 201 ACCEPTED",
             'impact' => 'Mirar únicamente el status HTTP podría presentar una orden rechazada como creada, con un comprobante falso.',
             'decision' => 'VittlesClient envía el header de sede y OrderService exige status ACCEPTED, ID, referencia y total válidos.',
             'implementation' => 'VittlesClient::createOrder() / OrderService::validateOrder()',
             'claim' => 'El auditor contrastó el ejemplo de POST y la tabla de errores de API_DOCS.md.',
-            'probe' => 'Envió un POST de rechazo controlado sin el header; no creó una compra.',
-            'difference' => 'Observó HTTP 200/REJECTED, una combinación no descrita por la documentación.',
-            'confirmation' => 'Revisó do_POST y añadió un test que impide informar CREATED ante 200/REJECTED.',
-            'evidence' => 'POST rechazado observado directamente. La vista no envía POST al abrirse.',
+            'probe' => 'Autenticó, tomó el ID del producto del menú y envió el JSON del ejemplo. Después aisló variantes de contexto sin cambiar la intención del pedido.',
+            'difference' => 'El ejemplo fue rechazado con 200/REJECTED y reason missing location context.',
+            'confirmation' => 'Con el único header X-Vittles-Location: loc_1001, un POST equivalente creó una orden de total 31.0; GET por ID la recuperó.',
+            'evidence' => 'AUDIT_INDEPENDIENTE/evidence.json: order_create · header_isolation.json · confirmed_order.json.',
             'source' => 'FIX_API_DOCS.md → POST /v1/orders',
         ],
         'idempotency' => [
@@ -85,10 +123,10 @@ return [
             'decision' => 'OrderService genera una referencia estable, busca antes de crear y reconcilia respuestas inciertas sin reenviar el POST. No promete exactly once distribuido.',
             'implementation' => 'OrderService::findByReference() / reconcileUnknown()',
             'claim' => 'El auditor aisló la afirmación de idempotencia de client_ref en API_DOCS.md.',
-            'probe' => 'Comparó dos POST válidos con la misma referencia de una prueba previa y consultó el GET de búsqueda.',
+            'probe' => 'Envió dos POST aceptados con la misma referencia; después exploró la recuperación por referencia y probó una segunda ejecución.',
             'difference' => 'Los POST generaron IDs distintos; la búsqueda devolvió la lista de coincidencias.',
-            'confirmation' => 'Revisó do_POST, que no consulta duplicados, y verificó con tests que dos ejecuciones de nuestra integración hagan un solo POST.',
-            'evidence' => 'Duplicado secuencial observado previamente. La carrera entre clientes se deduce del código; esta pantalla no la reproduce.',
+            'confirmation' => 'La búsqueda de la referencia duplicada devolvió dos órdenes. Con una referencia nueva, consultar antes del POST y luego en otra ejecución recuperó el mismo ID.',
+            'evidence' => 'AUDIT_INDEPENDIENTE/confirmed_order.json · recovery.json · preflight.json. No se probó concurrencia.',
             'source' => 'FIX_API_DOCS.md → Idempotencia real y GET /v1/orders?client_ref=...',
         ],
     ],

@@ -19,10 +19,14 @@ Poder probar los endpoints del mock, observar las peticiones y respuestas reales
 - [x] Permitir probar autenticación, paginación de locations, catálogo completo, menú individual, búsqueda y detalle de órdenes, rechazo controlado y creación idempotente.
 - [x] Restringir ADMIN a `APP_ENV=local`, URL del mock en localhost y acceso desde loopback.
 - [x] Verificar en el navegador un 403 de menú inactivo, un 200 `REJECTED` y una creación seguida de `EXISTING` con el mismo ID.
+- [x] Explicar el recorrido de descubrimiento del agente y distinguir la evidencia guardada de las trazas de una sesión nueva.
+- [x] Añadir una prueba manual del POST publicado sin el header omitido y mostrar su 200 `REJECTED`.
 
 ## Criterio de aceptación
 
 Una discrepancia debe poder reconstruirse desde una traza concreta: método, ruta, parámetros, cuerpo redactado, HTTP, respuesta y número de intento. Las pruebas de órdenes aceptadas reutilizan `OrderService`; los POST no se reintentan a ciegas. La corrección del contrato se escribe manualmente en `FIX_API_DOCS.md` tras revisar la evidencia.
+
+La prueba del ejemplo oficial se ejecuta solo al pulsar su botón; la vista ADMIN por sí sola no crea órdenes. El test del laboratorio comprueba que ese POST no envía `X-Vittles-Location` y que el resultado mostrado es `REJECTED`.
 
 ## Límite deliberado
 

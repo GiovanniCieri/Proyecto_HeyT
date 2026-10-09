@@ -1,0 +1,53 @@
+{
+  "method": "API_DOCS.md plus HTTP only",
+  "base_url": "http://127.0.0.1:8422",
+  "observations": [
+    {
+      "case": "auth_without_bearer",
+      "method": "POST",
+      "path": "/oauth/token",
+      "http": 200,
+      "body": {
+        "access_token": "<redacted>",
+        "token_type": "bearer",
+        "expires": 90
+      },
+      "headers": {}
+    },
+    {
+      "case": "expired_token_after_92s",
+      "method": "GET",
+      "path": "/v1/locations",
+      "http": 401,
+      "body": {
+        "error": "token no longer valid"
+      },
+      "headers": {}
+    },
+    {
+      "case": "auth_after_expiry",
+      "method": "POST",
+      "path": "/oauth/token",
+      "http": 200,
+      "body": {
+        "access_token": "<redacted>",
+        "token_type": "bearer",
+        "expires": 90
+      },
+      "headers": {}
+    },
+    {
+      "case": "rate_limit",
+      "method": "GET",
+      "path": "/v1/locations",
+      "attempt_after_refresh": 29,
+      "http": 429,
+      "body": {
+        "error": "slow down"
+      },
+      "headers": {
+        "Retry-After-Ms": "4000"
+      }
+    }
+  ]
+}

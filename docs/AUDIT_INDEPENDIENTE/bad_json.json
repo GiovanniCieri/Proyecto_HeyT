@@ -1,0 +1,52 @@
+{
+  "observations": [
+    {
+      "case": "auth",
+      "request": {
+        "method": "POST",
+        "path": "/oauth/token",
+        "headers": {},
+        "body": {
+          "client_id": "partner-demo",
+          "client_secret": "[REDACTED]"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:10:25 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "access_token": "[REDACTED]",
+          "token_type": "bearer",
+          "expires": 90
+        }
+      }
+    },
+    {
+      "case": "malformed_json",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "Content-Type": "application/json",
+          "X-Vittles-Location": "loc_1001",
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": "{"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:10:25 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "unknown location_id"
+        }
+      }
+    }
+  ]
+}

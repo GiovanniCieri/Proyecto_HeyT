@@ -1,0 +1,143 @@
+{
+  "observations": [
+    {
+      "case": "auth",
+      "request": {
+        "method": "POST",
+        "path": "/oauth/token",
+        "headers": {},
+        "body": {
+          "client_id": "partner-demo",
+          "client_secret": "[REDACTED]"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:08:34 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "access_token": "[REDACTED]",
+          "token_type": "bearer",
+          "expires": 90
+        }
+      }
+    },
+    {
+      "case": "header_location-id",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "Location-Id": "loc_1001",
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:08:34 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "header_location",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "Location": "loc_1001",
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:08:34 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "header_x-vittles-location",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Vittles-Location": "loc_1001",
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:08:34 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "unknown location_id"
+        }
+      }
+    },
+    {
+      "case": "header_x-restaurant-id",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Restaurant-Id": "loc_1001",
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:08:34 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "header_x-pos-location-id",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-POS-Location-Id": "loc_1001",
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:08:34 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    }
+  ]
+}

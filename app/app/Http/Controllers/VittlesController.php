@@ -59,12 +59,13 @@ class VittlesController extends Controller
     public function audit(Request $request): View
     {
         $steps = config('vittles_audit.steps');
+        $investigation = config('vittles_audit.investigation');
         $selected = $request->query('step', 'auth');
         if (! is_string($selected) || ! array_key_exists($selected, $steps)) {
             $selected = 'auth';
         }
 
-        return view('vittles.audit', compact('steps', 'selected'));
+        return view('vittles.audit', compact('steps', 'selected', 'investigation'));
     }
 
     /** Recupera el detalle local mediante la referencia estable; devuelve 404 si no fue confirmado aquí. */

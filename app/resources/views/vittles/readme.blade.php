@@ -57,7 +57,7 @@ php artisan vittles:orders loc_1001</pre>
     <section class="panel readme-wide">
         <p class="section-number">05 · TRANSPARENCIA</p>
         <h2>IA y límites conocidos.</h2>
-        <p>Se usó Codex para analizar el mock, proponer el diseño, implementar y revisar. El código y sus decisiones deben poder explicarse en la entrevista. El comportamiento real observado del mock prevalece sobre su documentación cuando difieren; las correcciones están en <code>docs/Docs_API/vittles/FIX_API_DOCS.md</code>.</p>
+        <p>Se usó Codex para contrastar la documentación con respuestas HTTP, proponer el diseño, implementar y revisar. El código y sus decisiones deben poder explicarse en la entrevista. El comportamiento observado del mock prevalece sobre su documentación cuando difieren; las correcciones están en <code>docs/Docs_API/vittles/FIX_API_DOCS.md</code>.</p>
         <a class="text-link" href="{{ route('vittles.audit') }}">Recorrer cómo se descubrieron las discrepancias →</a>
     </section>
 </div>

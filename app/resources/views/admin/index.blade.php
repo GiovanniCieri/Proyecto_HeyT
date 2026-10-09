@@ -17,6 +17,19 @@
         <div><span class="section-number">ACCESO</span><strong>Solo local</strong></div>
     </div>
 
+    <section class="panel admin-audit-guide" aria-labelledby="admin-audit-heading">
+        <p class="section-number">INVESTIGACIÓN DEL AGENTE · PRUEBAS GUARDADAS</p>
+        <h2 id="admin-audit-heading">Cómo se descubrió el contrato.</h2>
+        <p class="muted">Este recorrido resume requests y respuestas de la auditoría independiente. Los botones del laboratorio generan peticiones nuevas y sus trazas aparecen más abajo; pueden devolver otro ID de orden o un 429 si el límite está ocupado.</p>
+        <ol class="admin-audit-list">
+            @foreach ($investigation as $moment)
+                <li><span>{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><div><strong>{{ $moment['title'] }}</strong><p>{{ $moment['result'] }}</p></div></li>
+            @endforeach
+        </ol>
+        <a class="secondary-button admin-audit-link" href="{{ route('vittles.audit') }}#investigation">Ver requests, decisiones y evidencia por paso →</a>
+        <p class="muted">Capturas originales redactadas: <code>docs/AUDIT_INDEPENDIENTE/</code>. Las trazas de esta página corresponden a la sesión actual, no sustituyen esas capturas.</p>
+    </section>
+
     <section class="panel admin-probes">
         <p class="section-number">LABORATORIO DE API</p>
         <h2>Probá un endpoint.</h2>
@@ -81,6 +94,12 @@
                 <span class="probe-method">POST /v1/orders · rechazo</span>
                 <p>Envía un payload vacío sin contexto de sede para observar el 200 + REJECTED. No crea una orden en este mock.</p>
                 <button class="probe-button" type="submit">Probar rechazo →</button>
+            </form>
+            <form method="post" action="{{ route('admin.probe') }}" class="probe-card">
+                @csrf<input type="hidden" name="probe" value="order-documented">
+                <span class="probe-method">POST /v1/orders · guía oficial</span>
+                <p>Reproduce el JSON del ejemplo sin el header de sede que la guía omitió. En el mock devuelve 200 + REJECTED; comprobá el resultado y la traza.</p>
+                <button class="probe-button" type="submit">Reproducir ejemplo oficial →</button>
             </form>
             <form method="post" action="{{ route('admin.probe') }}" class="probe-card probe-card-create">
                 @csrf<input type="hidden" name="probe" value="order-create">

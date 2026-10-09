@@ -47,6 +47,7 @@ class AdminController extends Controller
             'searchId' => $searchId,
             'count' => count($recent),
             'errorCount' => count(array_filter($recent, fn (array $entry) => $this->isError($entry))),
+            'investigation' => config('vittles_audit.investigation'),
         ]);
     }
 
@@ -55,7 +56,7 @@ class AdminController extends Controller
     {
         $this->onlyLocalMock();
         $kind = Validator::make($request->all(), [
-            'probe' => ['required', Rule::in(['auth', 'locations', 'catalog', 'menu', 'order-search', 'order-detail', 'order-rejected', 'order-create'])],
+            'probe' => ['required', Rule::in(['auth', 'locations', 'catalog', 'menu', 'order-search', 'order-detail', 'order-rejected', 'order-documented', 'order-create'])],
         ])->validate()['probe'];
         $this->diagnostics->event('info', 'admin.probe.started', __METHOD__, ['probe' => $kind]);
 
@@ -68,6 +69,7 @@ class AdminController extends Controller
                 'order-search' => $client->get('/v1/orders', ['client_ref' => $request->validate(['client_ref' => ['required', 'string', 'max:100']])['client_ref']]),
                 'order-detail' => $client->get('/v1/orders/'.rawurlencode($request->validate(['order_id' => ['required', 'string', 'max:80']])['order_id'])),
                 'order-rejected' => $client->probeRejectedOrder(),
+                'order-documented' => $client->probeDocumentedOrder(),
                 'order-create' => $this->createOrder($request, $orders),
             };
         } catch (InvalidArgumentException|VittlesException $e) {

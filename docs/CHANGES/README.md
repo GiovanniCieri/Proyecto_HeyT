@@ -28,3 +28,8 @@ Los archivos se nombran `AAAA-MM-DD_NN_ID_descripcion.md`. `NN` conserva el orde
 | 22 | [SETUP-003](2026-10-08_22_SETUP-003_php-compatible-windows.md) | Selección de PHP 8.2+ en scripts de Windows |
 | 23 | [SETUP-004](2026-10-08_23_SETUP-004_arranque-portable.md) | Arranque repetible, salud HTTP y accesos portables |
 | 24 | [DOC-004](2026-10-08_24_DOC-004_aclaracion-resolve.md) | Explicación de los selectores PHP y Python en README |
+| 25 | [API-004](2026-10-08_25_API-004_auditoria-caja-negra.md) | Pruebas HTTP reproducibles para cada hallazgo del contrato |
+| 26 | [DOC-005](2026-10-08_26_DOC-005_presentacion-auditoria.md) | Presentación consistente de los hallazgos y su evidencia HTTP |
+| 27 | [API-005](2026-10-08_27_API-005_auditoria-independiente.md) | Auditoría autónoma de endpoints con procedimiento y respuestas HTTP |
+| 28 | [WEB-004](2026-10-08_28_WEB-004_recorrido-agente-admin.md) | Recorrido del agente en Auditoría y reproducción del POST oficial en ADMIN |
+| 29 | [DEL-001](2026-10-08_29_DEL-001_revision-entrega.md) | Comando duplicado verificado, README breve y revisión del paquete |

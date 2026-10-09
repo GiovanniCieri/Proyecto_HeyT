@@ -1,39 +1,40 @@
-# API_FIX — Verificar y corregir el contrato de Vittles
+# API_FIX — Auditoría externa del contrato Vittles
 
-**Estado:** contrato endpoint por endpoint auditado; quedan pruebas dirigidas de expiración y rate limit
-**Alcance:** documentación de la API ficticia, no código de la integración  
-**Entrada:** docs/Docs_API/vittles/API_DOCS.md, mock_server.py y README.md  
-**Salida:** docs/Docs_API/vittles/FIX_API_DOCS.md
+**Estado:** los endpoints publicados y el flujo de repetición fueron auditados también por un agente independiente; quedan pruebas específicas de concurrencia, 500 y cuota exacta.
 
-## Objetivo
+**Fuente técnica:** `API_DOCS.md` frente a respuestas HTTP del mock levantado como servidor.
+**Salida:** `docs/Docs_API/vittles/FIX_API_DOCS.md`, capturas redactadas `BLACKBOX_AUDIT_*.json` y `docs/AUDIT_INDEPENDIENTE/`.
 
-Comparar cada afirmación técnica de API_DOCS.md con el comportamiento real del mock y escribir una versión corregida, reproducible y coherente del contrato. Mantener intactos los tres archivos originales.
+## Tareas y evidencia
 
-## Tareas
+- [x] Ejecutar `py -3 scripts/audit-vittles-blackbox.py` contra el mock local.
+- [x] Comprobar autenticación sin bearer y lectura con bearer ausente/desconocido.
+- [x] Seguir la paginación hasta obtener las cinco sedes.
+- [x] Consultar el menú de cada sede y una sede inexistente.
+- [x] Probar POST sin header de sede, con lista vacía y aceptado.
+- [x] Repetir el POST con el mismo `client_ref` y comparar IDs.
+- [x] Buscar por `client_ref` y leer una orden por ID; probar ID inexistente.
+- [x] Redactar tokens y credenciales antes de guardar las respuestas.
+- [x] Esperar 92 segundos y comprobar que el token ya no sirve: 401 `token no longer valid`.
+- [x] Saturar el rate limit y capturar 429, cuerpo y `Retry-After-Ms`.
+- [ ] Medir en un mock limpio el cupo exacto y si el límite es global o por token.
+- [ ] Reproducir errores transitorios y otros casos límite solo si aportan una decisión a la integración.
+- [x] Corregir el recorrido web de auditoría para citar la evidencia HTTP y no la implementación interna del mock.
+- [x] Ejecutar una auditoría autónoma de todos los endpoints publicados, sin entregarle hallazgos previos al agente.
+- [x] Reproducir por HTTP el header de sede omitido, la creación aceptada, la lectura por ID y dos POST con igual referencia.
+- [x] Descubrir por HTTP la búsqueda por `client_ref` y probar la consulta antes y después de crear, incluida una segunda autenticación.
+- [x] Comprobar por HTTP JSON incompleto, cantidad cero, producto agotado y precio distinto según la sede.
+- [x] Comparar `created_at` con el header HTTP `Date` de la misma respuesta.
+- [ ] Reproducir un 500 transitorio con una captura dirigida sin saturar el rate limit.
+- [ ] Evaluar carreras entre procesos y recuperación tras un POST de resultado incierto en un entorno controlado.
 
-- [x] Levantar el mock y reproducir la integración por comando (`py -3 docs/Docs_API/vittles/mock_server.py`).
-- [x] Revisar payload de autenticación y respuesta `expires`; el vencimiento de 90 segundos se confirma además en el código.
-- [x] Verificar paginación y cinco sedes, incluida la inactiva.
-- [x] Verificar campo `menuItems`, variantes de tipos, 403 y el 500 transitorio en el código.
-- [x] Verificar creación aceptada, header de contexto y respuesta `REJECTED`.
-- [x] Verificar búsqueda por `client_ref` y su ausencia de idempotencia del lado servidor.
-- [x] Documentar límite, encabezado y zona horaria según el código del mock.
-- [x] Escribir el contrato corregido en FIX_API_DOCS.md, con tabla de discrepancias, ejemplos y procedencia.
-- [x] Auditar FIX_API_DOCS.md con el perfil `api_auditor` y corregir validación de cantidades, `client_ref`, JSON mal formado, fechas y concurrencia.
-- [x] Añadir respuestas representativas observadas y marcar por separado los casos derivados del código del mock.
-- [ ] Agregar transcripciones breves request/response de token vencido y 429 tras una prueba dirigida.
+## Auditoría independiente
 
-## Evidencia disponible
-
-La exploración anterior observó expires=90, páginas de 2/2/1 locations, menuItems, 403 en la sede inactiva, 200 con REJECTED al omitir X-Vittles-Location y dos órdenes diferentes con el mismo client_ref. La pasada API-002 repitió requests directos a token, locations, menú activo/inactivo/desconocido, búsqueda y lectura de orden inexistente, y rechazos por header y lista vacía. La traza local registra además un 500 de menú seguido de 200. La auditoría API-003 contrastó cada endpoint con el mock y añadió los límites derivados del código sin presentarlos como requests ejecutados. FIX_API_DOCS distingue observación directa de lectura del código.
+El agente `api_auditor` definió y ejecutó sus propios casos sobre los endpoints del ejercicio. Su [informe](../AUDIT_INDEPENDIENTE/INFORME.md) incluye procedimiento repetible, respuestas redactadas, discrepancias confirmadas y preguntas abiertas. La prueba secuencial de repetición está en `preflight.json`; no afirma atomicidad distribuida.
 
 ## Criterios de aceptación
 
-- Cada endpoint de API_DOCS.md tiene una descripción corregida o una nota explícita de comportamiento no comprobado.
-- Ninguna corrección se basa solo en una suposición. El documento distingue observación de inferencia.
-- FIX_API_DOCS.md contiene contrato y discrepancias, no una lista de tareas ni decisiones de producto.
-- API_DOCS.md, README.md y mock_server.py conservan su contenido original.
-
-## Fuera de alcance
-
-Modificar el mock, corregir una API real de producción o implementar el cliente de integración.
+- Cada diferencia afirmada en `FIX_API_DOCS.md` remite a una respuesta HTTP reproducible.
+- Las observaciones se distinguen de hipótesis y preguntas abiertas.
+- El mock, su documentación oficial y el README original permanecen intactos.
+- El proceso se puede repetir con un mock limpio y sin leer su implementación.

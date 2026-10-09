@@ -1,0 +1,128 @@
+{
+  "observations": [
+    {
+      "case": "auth",
+      "request": {
+        "method": "POST",
+        "path": "/oauth/token",
+        "headers": {},
+        "body": {
+          "client_id": "partner-demo",
+          "client_secret": "[REDACTED]"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:08:01 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "access_token": "[REDACTED]",
+          "token_type": "bearer",
+          "expires": 90
+        }
+      }
+    },
+    {
+      "case": "order_airport",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Vittles-Location": "loc_1003"
+        },
+        "body": {
+          "location_id": "loc_1003",
+          "client_ref": "audit-target-73668a7ce0b44641ac15553b4943263b",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:08:01 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": "ord_5511",
+          "status": "ACCEPTED",
+          "total": 32.5,
+          "created_at": "2026-10-08T22:08:01Z",
+          "updated": 1791508081380,
+          "client_ref": "audit-target-73668a7ce0b44641ac15553b4943263b"
+        }
+      }
+    },
+    {
+      "case": "order_unavailable_beachside",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Vittles-Location": "loc_1005"
+        },
+        "body": {
+          "location_id": "loc_1005",
+          "client_ref": "audit-target-571e747c8cda42c4adbdd40372e5dec2",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:08:01 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "item unavailable at this location"
+        }
+      }
+    },
+    {
+      "case": "order_disabled_warehouse",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Vittles-Location": "loc_1004"
+        },
+        "body": {
+          "location_id": "loc_1004",
+          "client_ref": "audit-target-bf61faf2599b454081276d02884cd547",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Date": "Fri, 09 Oct 2026 01:08:01 GMT",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "item not on this menu"
+        }
+      }
+    }
+  ]
+}

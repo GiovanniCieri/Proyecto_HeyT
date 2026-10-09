@@ -1,0 +1,218 @@
+{
+  "observations": [
+    {
+      "case": "auth_valid",
+      "request": {
+        "method": "POST",
+        "path": "/oauth/token",
+        "headers": {},
+        "body": {
+          "client_id": "partner-demo",
+          "client_secret": "[REDACTED]"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "access_token": "[REDACTED]",
+          "token_type": "bearer",
+          "expires": 90
+        }
+      }
+    },
+    {
+      "case": "body_location_context",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {},
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-5d396398649a4a9b80bb88ba7a143b1e",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ],
+          "location_context": "loc_1001"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "body_location",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {},
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-5d396398649a4a9b80bb88ba7a143b1e",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ],
+          "location": "loc_1001"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "body_context_location_id",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {},
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-5d396398649a4a9b80bb88ba7a143b1e",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ],
+          "context": {
+            "location_id": "loc_1001"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "body_location_object",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {},
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-5d396398649a4a9b80bb88ba7a143b1e",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ],
+          "location": {
+            "id": "loc_1001"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "header_x_partner_location_id",
+      "request": {
+        "method": "POST",
+        "path": "/v1/orders",
+        "headers": {
+          "X-Partner-Location-Id": "loc_1001"
+        },
+        "body": {
+          "location_id": "loc_1001",
+          "client_ref": "audit-context-5d396398649a4a9b80bb88ba7a143b1e",
+          "customer": "[REDACTED]",
+          "items": [
+            {
+              "item_id": "itm_88",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "REJECTED",
+          "reason": "missing location context"
+        }
+      }
+    },
+    {
+      "case": "get_unknown",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders/ord_nonexistent_audit",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "error": "no such order"
+        }
+      }
+    },
+    {
+      "case": "get_unknown_no_token",
+      "request": {
+        "method": "GET",
+        "path": "/v1/orders/ord_nonexistent_audit",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "error": "missing token"
+        }
+      }
+    }
+  ]
+}
